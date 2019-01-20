@@ -39,7 +39,6 @@ public class OI {
     private static final int k_povUp = 90;
     private static final int k_povDown = 270;
 
-
     public void init() {
     }
 

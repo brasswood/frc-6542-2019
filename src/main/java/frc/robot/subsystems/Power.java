@@ -3,11 +3,13 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.OI;
+import frc.robot.dashboard.Keys;
 
 public class Power extends Subsystem {
     private static Power m_instance;
+    private final int k_numOfChannels = 16;
     private PowerDistributionPanel m_PDP = new PowerDistributionPanel(OI.k_canPDPID);
-    private double[] m_current = new double[16];
+    private double[] m_current = new double[k_numOfChannels];
 
     private Power() {
 
@@ -21,14 +23,13 @@ public class Power extends Subsystem {
     }
 
     private void update() {
-        for (int ch = 0; ch < 16; ch++) {
+        for (int ch = 0; ch < k_numOfChannels; ch++) {
             m_current[ch] = m_PDP.getCurrent(ch);
         }
     }
     
     public void outputTelemetry() {
-        SmartDashboard.putNumber("current[0]", m_current[0]);
-        SmartDashboard.putNumberArray("currentDraw", m_current);
+        SmartDashboard.putData(Keys.pdp, m_PDP);
     }
 
     public void doRun() {

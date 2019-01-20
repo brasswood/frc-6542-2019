@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.OI;
+import frc.robot.dashboard.Keys;
 
 // Wrapper class for DifferentialDrive
 
@@ -32,8 +33,8 @@ public class Drive extends Subsystem {
     }
 
     public void outputTelemetry() {
-        SmartDashboard.putNumber("leftPWMOut", m_LeftSpark.get());
-        SmartDashboard.putNumber("rightPWMOut", m_RightSpark.get());
+        SmartDashboard.putData(Keys.leftSpark, m_LeftSpark);
+        SmartDashboard.putData(Keys.rightSpark, m_RightSpark);
     }
 
     public void doRun() {
