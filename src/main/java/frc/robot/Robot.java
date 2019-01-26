@@ -9,7 +9,11 @@ package frc.robot;
 
 import java.util.Arrays;
 
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.cscore.VideoMode.PixelFormat;
+import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.TimedRobot;
+import frc.robot.vision.RedCamera;
 import frc.robot.subsystems.*;
 
 /**
@@ -29,7 +33,8 @@ public class Robot extends TimedRobot {
    private final SubsystemManager m_subsystemManager = new SubsystemManager(Arrays.asList(Drive.getInstance(), Power.getInstance()));
   @Override
   public void robotInit() {
-
+    UsbCamera cam = CameraServer.getInstance().startAutomaticCapture();
+    cam.setVideoMode(RedCamera.kFormat, RedCamera.kWidth, RedCamera.kHeight, RedCamera.kFps);
   }
 
   @Override
