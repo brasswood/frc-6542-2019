@@ -18,10 +18,10 @@ public class OI {
     public static final int k_pwmRightDrive1 = 1;
     public static final int k_pwmRightDrive2 = -1;
     public static final int k_pwmElevatorMotor = 3;
-    public static final int k_canLeftDriveTalonID = -1;
-    public static final int k_canLeftDriveVictorID = -1;
-    public static final int k_canRightDriveTalonID = -1;
-    public static final int k_canRightDriveVictorID = -1;
+    public static final int k_canLeftDriveTalonID = 1;
+    public static final int k_canLeftDriveVictorID = 3;
+    public static final int k_canRightDriveTalonID = 2;
+    public static final int k_canRightDriveVictorID = 4;
     public static final int k_canPDPID = 0;
 
     // Declare PDP ports

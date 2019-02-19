@@ -17,6 +17,10 @@ public class SubsystemManager {
         m_allSubsystems.forEach((s) -> s.outputTelemetry());
     }
 
+    public void initialize() {
+        m_allSubsystems.forEach((s) -> s.init());
+    }
+
     public void run() {
         m_allSubsystems.forEach((s) -> s.doRun());
     }

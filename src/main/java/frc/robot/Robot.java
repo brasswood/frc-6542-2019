@@ -8,11 +8,15 @@
 package frc.robot;
 
 import java.util.Arrays;
-
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.cscore.VideoMode.PixelFormat;
 import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.RobotDrive;
 import frc.robot.vision.RedCamera;
 import frc.robot.subsystems.*;
 
@@ -24,6 +28,16 @@ import frc.robot.subsystems.*;
  * project.
  */
 public class Robot extends TimedRobot {
+  WPI_TalonSRX myTalon = new WPI_TalonSRX(0);
+  RobotDrive myRobot;
+
+
+  public Robot() {
+    myRobot = new RobotDrive(0,1);
+    myRobot.setExpiration (0.1);
+  }
+
+  
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
@@ -33,9 +47,13 @@ public class Robot extends TimedRobot {
    private final SubsystemManager m_subsystemManager = new SubsystemManager(Arrays.asList(Drive.getInstance(), Power.getInstance()));
   @Override
   public void robotInit() {
+    myTalon.set(ControlMode.PercentOutput, 0);
     UsbCamera cam = CameraServer.getInstance().startAutomaticCapture();
     cam.setVideoMode(RedCamera.kFormat, RedCamera.kWidth, RedCamera.kHeight, RedCamera.kFps);
+    m_subsystemManager.initialize();
   }
+
+
 
   @Override
   public void autonomousInit() {
@@ -45,6 +63,10 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {
     m_subsystemManager.run();
     m_subsystemManager.outputToSmartDashboard();
+    myRobot.setSafetyEnabled(false);
+    myRobot.drive(0.5, 0.5);
+    Timer.delay(1.0);
+    myRobot.drive(0.0, 0.0);
   }
 
   @Override

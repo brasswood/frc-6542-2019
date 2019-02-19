@@ -22,6 +22,10 @@ public class Power extends Subsystem {
         return m_instance;
     }
 
+    public void init() {
+        
+    }
+
     private void update() {
         for (int ch = 0; ch < k_numOfChannels; ch++) {
             m_current[ch] = m_PDP.getCurrent(ch);
