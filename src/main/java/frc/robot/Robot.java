@@ -17,7 +17,6 @@ import edu.wpi.cscore.VideoMode.PixelFormat;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.RobotDrive;
 import frc.robot.vision.RedCamera;
 import frc.robot.subsystems.*;
 
@@ -35,7 +34,7 @@ public class Robot extends TimedRobot {
 
 
   public Robot() {
-    myRobot = new RobotDrive(0,1);
+    myRobot = new DifferentialDrive(0,1);
     myRobot.setExpiration (0.1);
   }
 
