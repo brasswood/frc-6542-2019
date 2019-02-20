@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.cscore.VideoMode.PixelFormat;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.vision.RedCamera;
 import frc.robot.subsystems.*;
@@ -30,11 +31,11 @@ import frc.robot.subsystems.*;
 public class Robot extends TimedRobot {
   WPI_TalonSRX myTalon = new WPI_TalonSRX(0);
   Spark elevatorSpark = new Spark(OI.k_pwmElevatorMotor);
-  RobotDrive myRobot;
+  DifferentialDrive myRobot;
 
 
   public Robot() {
-    myRobot = new DifferentialDrive(0,1);
+    myRobot = new DifferentialDrive(myTalon, myTalon);
     myRobot.setExpiration (0.1);
   }
 
@@ -65,9 +66,9 @@ public class Robot extends TimedRobot {
     m_subsystemManager.run();
     m_subsystemManager.outputToSmartDashboard();
     myRobot.setSafetyEnabled(false);
-    myRobot.drive(0.5, 0.5);
+    myRobot.arcadeDrive(0.5, 0.5);
     Timer.delay(1.0);
-    myRobot.drive(0.0, 0.0);
+    myRobot.arcadeDrive(0.0, 0.0);
   }
 
   @Override
