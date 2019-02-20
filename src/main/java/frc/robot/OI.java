@@ -43,7 +43,7 @@ public class OI {
     }
 
     public void update() {
-        int pov = m_controlPad.getPOV();
+        /*int pov = m_controlPad.getPOV();
         if (m_povPrev != pov) {
             if (pov == k_povUp) {
                 m_elevatorPos++;
@@ -57,6 +57,7 @@ public class OI {
             }
         }
         m_povPrev = m_controlPad.getPOV();
+        */
     }
 
     public double getForwardSpeed() {

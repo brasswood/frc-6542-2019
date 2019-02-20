@@ -10,6 +10,7 @@ package frc.robot;
 import java.util.Arrays;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.cscore.VideoMode.PixelFormat;
@@ -29,6 +30,7 @@ import frc.robot.subsystems.*;
  */
 public class Robot extends TimedRobot {
   WPI_TalonSRX myTalon = new WPI_TalonSRX(0);
+  Spark elevatorSpark = new Spark(OI.k_pwmElevatorMotor);
   RobotDrive myRobot;
 
 
@@ -85,6 +87,16 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testPeriodic() {
+    if (OI.getInstance().getElevatorUpButton() == true){
+      elevatorSpark.set(0.5);
+    } 
+    else if (OI.getInstance().getElevatorDownButton() == true){
+      elevatorSpark.set(-0.5);
+    }
+    else {
+      elevatorSpark.set(0);
+    }
+
   }
 
 }
