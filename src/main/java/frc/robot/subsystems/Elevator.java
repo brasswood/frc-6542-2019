@@ -7,8 +7,18 @@ import frc.robot.dashboard.Keys;
 
 public class Elevator extends Subsystem {
 
-    private Spark m_elevatorSpark = new Spark(0);
+    private Spark m_elevatorSpark = new Spark(OI.k_pwmElevatorMotor);
+    private static Elevator m_instance;
 
+    private Elevator() {}
+
+    public static Elevator getInstance() {
+        if (m_instance == null) {
+            m_instance = new Elevator();
+        }
+        return m_instance;
+    }
+    
     @Override
     public void outputTelemetry() {
         SmartDashboard.putData(Keys.elevatorSpark, m_elevatorSpark);
