@@ -7,5 +7,6 @@ public final class Keys {
     public static final String rightTalon = "Right Spark";
     public static final String leftVictor = "Left Victor";
     public static final String rightVictor = "Right Victor";
+    public static final String elevatorSpark = "Elevator Spark";
 
 }

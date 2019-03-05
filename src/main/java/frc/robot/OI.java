@@ -7,17 +7,13 @@ import edu.wpi.first.wpilibj.GenericHID.Hand;
 public class OI {
 
     private static OI m_instance;
-    private GenericHID m_controlPad = new XboxController(0); /* Must construct specific controller (ie.
+    private XboxController m_controlPad = new XboxController(0); /* Must construct specific controller (ie.
     * XboxController(), Joystick()) */
     private int m_elevatorPos = 0;
     private int m_povPrev = 0;
 
     // Declare PWM and CAN ports
-    public static final int k_pwmLeftDrive1 = 0;
-    public static final int k_pwmLeftDrive2 = -1;
-    public static final int k_pwmRightDrive1 = 1;
-    public static final int k_pwmRightDrive2 = -1;
-    public static final int k_pwmElevatorMotor = 3;
+    public static final int k_pwmElevatorMotor = 0;
     public static final int k_canLeftDriveTalonID = 1;
     public static final int k_canLeftDriveVictorID = 3;
     public static final int k_canRightDriveTalonID = 2;
@@ -38,6 +34,8 @@ public class OI {
     private static final int k_leftThrottleAxis = 2;
     private static final int k_povUp = 90;
     private static final int k_povDown = 270;
+    private static final int k_leftButton = 4;
+    private static final int k_rightButton = 5;
 
     public void init() {
     }
@@ -70,6 +68,14 @@ public class OI {
 
     public int getElevatorPos() {
         return m_elevatorPos;
+    }
+
+    public boolean getElevatorUpButton() {
+        return m_controlPad.getBumper(Hand.kRight);
+    }
+
+    public boolean getElevatorDownButton(){
+        return m_controlPad.getBumper(Hand.kLeft);
     }
 
     public static OI getInstance() {
