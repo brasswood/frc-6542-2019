@@ -32,10 +32,10 @@ public class Elevator extends Subsystem {
     @Override
     public void doRun() {
         if (OI.getInstance().getElevatorUpButton() == true){
-            m_elevatorSpark.set(0.5);
+            m_elevatorSpark.set(1.0);
           } 
           else if (OI.getInstance().getElevatorDownButton() == true){
-            m_elevatorSpark.set(-0.5);
+            m_elevatorSpark.set(-1.0);
           }
           else {
             m_elevatorSpark.set(0);
