@@ -65,14 +65,11 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {
     m_subsystemManager.run();
     m_subsystemManager.outputToSmartDashboard();
-    // myRobot.setSafetyEnabled(false);
-    // myRobot.arcadeDrive(0.5, 0.5);
-    // Timer.delay(1.0);
-    // myRobot.arcadeDrive(0.0, 0.0);
   }
 
   @Override
   public void teleopInit() {
+    Drive.getInstance().teleopInit();
   }
 
   @Override
