@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
@@ -29,8 +30,18 @@ public class Drive extends Subsystem {
      private WPI_TalonSRX rightTalon = new WPI_TalonSRX(OI.k_canRightDriveTalonID);
      private WPI_VictorSPX leftVictor = new WPI_VictorSPX(OI.k_canLeftDriveVictorID);
      private WPI_VictorSPX rightVictor = new WPI_VictorSPX(OI.k_canRightDriveVictorID);
+     
+     ShuffleboardTab driveTab = Shuffleboard.getTab(Keys.tab_Drive);
+     ShuffleboardLayout motors = driveTab.getLayout(Keys.layout_Motors, BuiltInLayouts.kGrid)
+         .withSize(3, 3).withPosition(0, 0).withProperties(Map.of("Number of columns", 1, "Number of rows", 1));
+     NetworkTableEntry ntLeftTalon = motors.add(Keys.leftTalon, 0).withWidget(BuiltInWidgets.kNumberBar).getEntry();
+     NetworkTableEntry ntLeftVictor = motors.add(Keys.leftVictor, 0).withWidget(BuiltInWidgets.kNumberBar).getEntry();
+     NetworkTableEntry ntRightTalon = motors.add(Keys.rightTalon, 0).withWidget(BuiltInWidgets.kNumberBar).getEntry();
+     NetworkTableEntry ntRightVictor = motors.add(Keys.rightVictor, 0).withWidget(BuiltInWidgets.kNumberBar).getEntry();
 
-     private SimpleWidget widget_leftTalon, widget_leftVictor, widget_rightTalon, widget_rightVictor;
+     //TODO: make a better graph widget, with timestamps, and grab encoder values in a thread
+     NetworkTableEntry ntEncoderVelocity = motors.add(Keys.driveEncoderVelocity, 0).withWidget(BuiltInWidgets.kGraph).getEntry();
+     NetworkTableEntry ntEncoderPosition = motors.add(Keys.driveEncoderPosition, 0).withWidget(BuiltInWidgets.kGraph).getEntry();
 
      private DifferentialDrive m_DifferentialDrive = new DifferentialDrive(leftTalon, rightTalon);
     
@@ -46,13 +57,6 @@ public class Drive extends Subsystem {
     }
 
     public void init() {
-        ShuffleboardTab driveTab = Shuffleboard.getTab(Keys.tab_Drive);
-        ShuffleboardLayout motors = driveTab.getLayout(Keys.layout_Motors, BuiltInLayouts.kGrid)
-            .withSize(16, 16).withProperties(Map.of("Number of columns", 2, "Number of rows", 2));
-        widget_leftTalon = motors.add(Keys.leftTalon, 0).withWidget(BuiltInWidgets.kSpeedController);
-        widget_leftVictor = motors.add(Keys.leftVictor, 0).withWidget(BuiltInWidgets.kSpeedController);
-        widget_rightTalon = motors.add(Keys.rightTalon, 0).withWidget(BuiltInWidgets.kSpeedController);
-        widget_rightVictor = motors.add(Keys.rightVictor, 0).withWidget(BuiltInWidgets.kSpeedController);
     }
     private void setDriveMotors() {
         OI oi = OI.getInstance();
@@ -60,11 +64,12 @@ public class Drive extends Subsystem {
     }
 
     public void outputTelemetry() {
-        widget_leftTalon.getEntry().setDouble(leftTalon.get());
-        widget_leftVictor.getEntry().setDouble(leftVictor.get());
-        widget_rightTalon.getEntry().setDouble(rightTalon.get());
-        widget_rightVictor.getEntry().setDouble(rightVictor.get());
-
+        ntLeftTalon.setDouble(leftTalon.getMotorOutputPercent());
+        ntLeftVictor.setDouble(leftVictor.getMotorOutputPercent());
+        ntRightTalon.setDouble(rightTalon.getMotorOutputPercent());
+        ntRightVictor.setDouble(rightVictor.getMotorOutputPercent());
+        ntEncoderVelocity.setDouble(leftTalon.getSelectedSensorVelocity());
+        ntEncoderPosition.setDouble(leftTalon.getSelectedSensorPosition());
     }
 
     public void doRun() {
@@ -74,20 +79,5 @@ public class Drive extends Subsystem {
     public void teleopInit() {
         leftVictor.follow(leftTalon);
         rightVictor.follow(rightTalon);
-                // maybe bad coding practice but I want to practice using anonymous classes
-        new Thread(new Runnable() {
-            public void run() {
-                while (true) {
-                    try {
-                        Thread.sleep(1);
-                    } catch (Exception ex) {
-                        // Do Nothing
-                    }
-                    /* Grab the latest signal update from our ~1ms frame update */
-                    double velocity = leftTalon.getSelectedSensorVelocity(0);
-                    SmartDashboard.putNumber(Keys.driveEncoderVelocity, velocity);
-                }
-            }
-        }).start();
     }
 }

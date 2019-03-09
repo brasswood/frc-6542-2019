@@ -9,6 +9,7 @@ public final class Keys {
     public static final String rightVictor = "Right Victor";
     public static final String elevatorSpark = "Elevator Spark";
     public static final String driveEncoderVelocity = "Left Drive Velocity";
+    public static final String driveEncoderPosition = "Left Drive Position";
 
     public static final String tab_Drive = "Drive";
     public static final String layout_Motors = "Motors";
