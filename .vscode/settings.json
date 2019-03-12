@@ -1,6 +1,6 @@
 {
   "java.configuration.updateBuildConfiguration": "automatic",
-  "java.home": "~/Robotics/wpilib/jdk",
+  "java.home": "/home/andrew/Robotics/wpilib/jdk",
   "files.exclude": {
     "**/.git": true,
     "**/.svn": true,

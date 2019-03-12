@@ -25,6 +25,7 @@ public class OI {
     public static final int k_pdpLeftDrive2 = -1;
     public static final int k_pdpRightDrive1 = 0;
     public static final int k_pdpRightDrive2 = -1;
+    public static final int k_pdpElevator = 4;
 
     // Maximum elevator index
     private static final int k_maxElevatorPos = 3;
