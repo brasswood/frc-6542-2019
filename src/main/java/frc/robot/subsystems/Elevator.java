@@ -16,7 +16,7 @@ public class Elevator extends Subsystem {
     private final double k_upSpeed = 1;
     private final double k_downSpeed = 0.03;
     private final double k_holdSpeed = 0.21;
-    private final double k_topPosition;
+    private final double k_topPosition = 0;
 
     private Elevator() {}
 
@@ -34,7 +34,6 @@ public class Elevator extends Subsystem {
 
     @Override
     public void init() {
-        holdTimer = new Timer();
         
     }
 
@@ -42,8 +41,6 @@ public class Elevator extends Subsystem {
     public void doRun() {
         if (OI.getInstance().getElevatorUpButton() == true){
             double output = 0;
-
-            if (Power.getInstance().getCurrent(OI.k_pdpElevatorMotor) > 70)
             m_elevatorSpark.set(k_upSpeed*k_upDirection);
         } 
         else if (OI.getInstance().getElevatorDownButton() == true){
