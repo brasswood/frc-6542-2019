@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.Spark;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.OI;
 import frc.robot.dashboard.Keys;
@@ -9,6 +10,13 @@ public class Elevator extends Subsystem {
 
     private Spark m_elevatorSpark = new Spark(OI.k_pwmElevatorMotor);
     private static Elevator m_instance;
+
+    private final double k_upDirection = 1.0;
+    private final double k_downDirection = -1.0;
+    private final double k_upSpeed = 1;
+    private final double k_downSpeed = 0.03;
+    private final double k_holdSpeed = 0.21;
+    private final double k_topPosition;
 
     private Elevator() {}
 
@@ -26,20 +34,24 @@ public class Elevator extends Subsystem {
 
     @Override
     public void init() {
+        holdTimer = new Timer();
         
     }
 
     @Override
     public void doRun() {
         if (OI.getInstance().getElevatorUpButton() == true){
-            m_elevatorSpark.set(1.0);
-          } 
-          else if (OI.getInstance().getElevatorDownButton() == true){
-            m_elevatorSpark.set(-1.0);
-          }
-          else {
-            m_elevatorSpark.set(0);
-          }
+            double output = 0;
+
+            if (Power.getInstance().getCurrent(OI.k_pdpElevatorMotor) > 70)
+            m_elevatorSpark.set(k_upSpeed*k_upDirection);
+        } 
+        else if (OI.getInstance().getElevatorDownButton() == true){
+            m_elevatorSpark.set(k_downSpeed*k_downDirection);
+        }
+        else {
+            m_elevatorSpark.set(k_holdSpeed*k_upDirection);
+        }
     }
 
 }

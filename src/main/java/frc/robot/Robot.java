@@ -46,7 +46,7 @@ public class Robot extends TimedRobot {
    */
 
    // Create subsystem list
-   private final SubsystemManager m_subsystemManager = new SubsystemManager(Arrays.asList(Drive.getInstance(), Elevator.getInstance(), Power.getInstance()));
+   private final SubsystemManager m_subsystemManager = new SubsystemManager(Arrays.asList(Drive.getInstance(), Elevator.getInstance(), Power.getInstance(), Intake.getInstance()));
   @Override
   public void robotInit() {
     // myTalon.set(ControlMode.PercentOutput, 0);
