@@ -12,6 +12,11 @@ public final class Keys {
     public static final String leftDriveEncoderPosition = "Left Drive Position";
     public static final String rightDriveEncoderPosition = "Right Drive Position";
     public static final String rightDriveEncoderVelocity = "Right Drive Velocity";
+    public static final String driveP = "P";
+    public static final String driveI = "I";
+    public static final String driveD = "D";
+    public static final String driveF = "F";
+    public static final String drivePIDToggle = "Send PID";
 
     public static class Tabs {
         public static final String tab_Drive = "Drive";
@@ -20,6 +25,7 @@ public final class Keys {
     public static class Widgets {
         public static final String widget_Intake = "Intake";
         public static final String layout_Motors = "Motors";
+        public static final String layout_PID = "PID";
     }
 
 }
