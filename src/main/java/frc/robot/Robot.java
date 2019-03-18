@@ -8,17 +8,9 @@
 package frc.robot;
 
 import java.util.Arrays;
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.cscore.UsbCamera;
-import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.cscore.VideoMode.PixelFormat;
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.TimedRobot;
-import frc.robot.vision.RedCamera;
 import frc.robot.subsystems.*;
 
 /**

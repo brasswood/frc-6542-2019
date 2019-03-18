@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.shuffleboard.WidgetType;
 
 import java.io.File;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
@@ -23,6 +24,8 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 
 import frc.robot.OI;
+import frc.robot.PIDList;
+import frc.robot.PIDWidget;
 import frc.robot.dashboard.Keys;
 import jaci.pathfinder.PathfinderJNI;
 import jaci.pathfinder.Trajectory;
@@ -39,8 +42,7 @@ public class Drive extends Subsystem {
      private WPI_VictorSPX leftVictor = new WPI_VictorSPX(OI.k_canLeftDriveVictorID);
      private WPI_VictorSPX rightVictor = new WPI_VictorSPX(OI.k_canRightDriveVictorID);
      private double kP, kI, kD, kF;
-     private boolean pidUpdate = false;
-
+     private boolean m_autonEnabled;
      private Segment[] leftPath;
      private Segment[] rightPath;
      private int current_seg = 0;
@@ -64,18 +66,10 @@ public class Drive extends Subsystem {
      NetworkTableEntry ntRightEncoderPosition = motors.add(Keys.rightDriveEncoderPosition, 0).withWidget(BuiltInWidgets.kNumberBar).getEntry();
 
      NetworkTableEntry ntMaxVel = driveTab.add("Max Velocity", 0).getEntry();
-
-     ShuffleboardLayout pid = driveTab.getLayout(Keys.Widgets.layout_PID, BuiltInLayouts.kList);
-     NetworkTableEntry ntP = pid.add(Keys.driveP, kP).getEntry();
-     NetworkTableEntry ntI = pid.add(Keys.driveI, kI).getEntry();
-     NetworkTableEntry ntD = pid.add(Keys.driveD, kD).getEntry();
-     NetworkTableEntry ntF = pid.add(Keys.driveF, kF).getEntry();
-     NetworkTableEntry ntPIDToggle = pid.add(Keys.drivePIDToggle, false).withWidget(BuiltInWidgets.kToggleButton).getEntry();
-
      private DifferentialDrive m_DifferentialDrive = new DifferentialDrive(leftTalon, rightTalon);
     
     private Drive() {
-
+        new PIDWidget("Drive PID", driveTab).addListener(new PIDUpdateListener());
     }
 
     public static Drive getInstance() {
@@ -106,6 +100,7 @@ public class Drive extends Subsystem {
     }
 
     private void updatePID(double p, double i, double d, double f) {
+        m_autonEnabled = false;
         kP = p;
         kI = i;
         kD = d;
@@ -141,32 +136,31 @@ public class Drive extends Subsystem {
         File rightPathFile = new File(Filesystem.getDeployDirectory(), "StraightLineTest.right.pf1.csv");
         leftPath = PathfinderJNI.trajectoryDeserializeCSV(leftPathFile.toString());
         rightPath = PathfinderJNI.trajectoryDeserializeCSV(rightPathFile.toString());
+        m_autonEnabled = true;
     }
 
     public void autonPeriodic() {
-        double lo = 0, ro = 0;
-        if (current_seg < leftPath.length) {
-            lo = leftPath[current_seg].velocity *k_encoderTicksPerInch;
-            ro = rightPath[current_seg].velocity *k_encoderTicksPerInch;
-            current_seg++;
-            leftTalon.set(ControlMode.Velocity, lo);
-            rightTalon.set(ControlMode.Velocity, ro);
-        } else if (current_seg == leftPath.length) {
-            System.out.println("Path Complete");
+        if (m_autonEnabled) {
+            double lo = 0, ro = 0;
+            if (current_seg < leftPath.length) {
+                lo = leftPath[current_seg].velocity *k_encoderTicksPerInch;
+                ro = rightPath[current_seg].velocity *k_encoderTicksPerInch;
+                current_seg++;
+                leftTalon.set(ControlMode.Velocity, lo);
+                rightTalon.set(ControlMode.Velocity, ro);
+            } else if (current_seg == leftPath.length) {
+                System.out.println("Path Complete");
+            } else {
+                leftTalon.set(ControlMode.Velocity, 0);
+                rightTalon.set(ControlMode.Velocity, 0);
+            }
         } else {
             leftTalon.set(ControlMode.Velocity, 0);
             rightTalon.set(ControlMode.Velocity, 0);
         }
-
     }
 
     public void disabledPeriodic() {
-        if (ntPIDToggle.getBoolean(false) != pidUpdate) {
-            pidUpdate = !pidUpdate;
-            updatePID(ntP.getDouble(kP), ntI.getDouble(kI), ntD.getDouble(kD), ntF.getDouble(kF));
-        }
-        // System.out.println(kP + ", " + kI + ", " + kD + ", " + kF);
-
     }
 
     private void configureTalons() {
@@ -200,5 +194,11 @@ public class Drive extends Subsystem {
         rightTalon.config_kI(0, kI);
         rightTalon.config_kD(0, kD);
         rightTalon.config_kF(0, kF);
+    }
+
+    private class PIDUpdateListener implements Consumer<PIDList>{
+        public void accept(PIDList list) {
+            updatePID(list.P, list.I, list.D, list.F);
+        }
     }
 }

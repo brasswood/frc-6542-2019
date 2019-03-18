@@ -1,9 +1,14 @@
 package frc.robot.subsystems;
 
+import java.util.function.Consumer;
+
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.OI;
+import frc.robot.PIDList;
+import frc.robot.PIDWidget;
 import frc.robot.dashboard.Keys;
 
 public class Elevator extends Subsystem {
@@ -23,7 +28,10 @@ public class Elevator extends Subsystem {
   private final double k_maxCurrent = 70;
   private final double k_maxStallTime = 2.5;
 
+  private double kP, kI, kD, kF;
+
   private Elevator() {
+      new PIDWidget("Elevator PID", Shuffleboard.getTab(Keys.Tabs.tab_Subsystems)).addListener(new PIDUpdateListener());
   }
 
   public static Elevator getInstance() {
@@ -84,6 +92,15 @@ public class Elevator extends Subsystem {
 
   public void goToPosition(ElevatorPosition desiredPosition) {
     double delta = desiredPosition.heightInInches - m_currentHeight;
+  }
+
+  private class PIDUpdateListener implements Consumer<PIDList>{
+    public void accept(PIDList values) {
+        kP = values.P;
+        kI = values.I;
+        kD = values.D;
+        kF = values.F;
+    }
   }
 
   public static enum ElevatorState {
