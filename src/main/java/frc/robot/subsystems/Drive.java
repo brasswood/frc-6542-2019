@@ -45,9 +45,9 @@ public class Drive extends Subsystem {
      private Segment[] rightPath;
      private int current_seg = 0;
 
-     private final int k_wheelDiameter = 6;
+     private final double k_wheelDiameter = 6;
      private final int k_encoderTicksPerRev = 4096;
-     private final int k_encoderTicksPerInch = k_encoderTicksPerRev/k_wheelDiameter;
+     private final int k_encoderTicksPerInch = (int) (k_encoderTicksPerRev/(k_wheelDiameter * Math.PI));
      
      ShuffleboardTab driveTab = Shuffleboard.getTab(Keys.Tabs.tab_Drive);
      ShuffleboardLayout motors = driveTab.getLayout(Keys.Widgets.layout_Motors, BuiltInLayouts.kGrid)
@@ -116,6 +116,7 @@ public class Drive extends Subsystem {
         max_vel = 0;
         leftVictor.follow(leftTalon);
         rightVictor.follow(rightTalon);
+        /*
         new Thread() {
             public void run() {
                 while (true) {
@@ -127,7 +128,7 @@ public class Drive extends Subsystem {
                 }
             }
         }.start();
-        System.out.println("Teleopinit run!");
+        */
     }
 
     public void teleopPeriodic() {
@@ -150,10 +151,11 @@ public class Drive extends Subsystem {
             current_seg++;
             leftTalon.set(ControlMode.Velocity, lo);
             rightTalon.set(ControlMode.Velocity, ro);
-        } else {
-            leftTalon.set(ControlMode.PercentOutput, 0);
-            rightTalon.set(ControlMode.PercentOutput, 0);
+        } else if (current_seg == leftPath.length) {
             System.out.println("Path Complete");
+        } else {
+            leftTalon.set(ControlMode.Velocity, 0);
+            rightTalon.set(ControlMode.Velocity, 0);
         }
 
     }
