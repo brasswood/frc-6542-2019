@@ -22,7 +22,7 @@ public class Intake extends Subsystem {
 
     NetworkTableEntry ntIntakeMotor = Shuffleboard.getTab(Keys.Tabs.tab_Subsystems).add(Keys.Widgets.widget_Intake, 0).getEntry();
     private Intake() {
-        new PIDWidget("Elevator PID", Shuffleboard.getTab(Keys.Tabs.tab_Subsystems)).addListener(new PIDUpdateListener());
+        new PIDWidget("Intake PID", Shuffleboard.getTab(Keys.Tabs.tab_Subsystems)).addListener(new PIDUpdateListener());
     }
 
     public static Intake getInstance() {

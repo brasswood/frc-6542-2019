@@ -23,7 +23,7 @@ public class Elevator extends Subsystem {
   private final double k_upDirection = 1.0;
   private final double k_downDirection = -1.0;
   private final double k_upSpeed = 1;
-  private final double k_downSpeed = 0.03;
+  private final double k_downSpeed = 0.5;
   private final double k_holdSpeed = 0.21;
   private final double k_maxCurrent = 70;
   private final double k_maxStallTime = 2.5;

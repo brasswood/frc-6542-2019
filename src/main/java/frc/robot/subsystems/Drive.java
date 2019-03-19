@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
@@ -10,8 +9,6 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.shuffleboard.SimpleWidget;
-import edu.wpi.first.wpilibj.shuffleboard.WidgetType;
 
 import java.io.File;
 import java.util.Map;
@@ -20,6 +17,8 @@ import java.util.function.Consumer;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.InvertType;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 
@@ -37,39 +36,48 @@ public class Drive extends Subsystem {
 
     private static Drive m_instance;
     public int max_vel = 0;
-     private WPI_TalonSRX leftTalon = new WPI_TalonSRX(OI.k_canLeftDriveTalonID);
-     private WPI_TalonSRX rightTalon = new WPI_TalonSRX(OI.k_canRightDriveTalonID);
-     private WPI_VictorSPX leftVictor = new WPI_VictorSPX(OI.k_canLeftDriveVictorID);
-     private WPI_VictorSPX rightVictor = new WPI_VictorSPX(OI.k_canRightDriveVictorID);
-     private double kP, kI, kD, kF;
-     private boolean m_autonEnabled;
-     private Segment[] leftPath;
-     private Segment[] rightPath;
-     private int current_seg = 0;
+    private TalonSRX leftTalon = new TalonSRX(OI.k_canLeftDriveTalonID);
+    private TalonSRX rightTalon = new TalonSRX(OI.k_canRightDriveTalonID);
+    private VictorSPX leftVictor = new VictorSPX(OI.k_canLeftDriveVictorID);
+    private VictorSPX rightVictor = new VictorSPX(OI.k_canRightDriveVictorID);
+    private boolean m_autonEnabled;
+    private Segment[] leftPath;
+    private Segment[] rightPath;
+    private int current_seg = 0;
 
-     private final double k_wheelDiameter = 6;
-     private final int k_encoderTicksPerRev = 4096;
-     private final int k_encoderTicksPerInch = (int) (k_encoderTicksPerRev/(k_wheelDiameter * Math.PI));
-     
-     ShuffleboardTab driveTab = Shuffleboard.getTab(Keys.Tabs.tab_Drive);
-     ShuffleboardLayout motors = driveTab.getLayout(Keys.Widgets.layout_Motors, BuiltInLayouts.kGrid)
-         .withSize(3, 3).withProperties(Map.of("Number of columns", 3, "Number of rows", 3));
+    ShuffleboardTab driveTab = Shuffleboard.getTab(Keys.Tabs.tab_Drive);
+
+    private final double k_wheelDiameter = 6;
+    private final int k_encoderTicksPerRev = 4096;
+    private final double k_inchesPerSecondToUnitsPer100Millis = k_encoderTicksPerRev / (k_wheelDiameter * Math.PI * 10);
+    private final double k_maxVelInUnitsPer100Millis = 2953;
+    private final double k_talonMaxOutput = 1023;
+    private final double kP = 1.7, kI = 0, kD = 0, kF = k_talonMaxOutput / k_maxVelInUnitsPer100Millis;
+    private double P = kP, I = kI, D = kD, F = kF;
+
+    /*
+    ShuffleboardLayout motors = driveTab.getLayout(Keys.Widgets.layout_Motors, BuiltInLayouts.kGrid).withSize(3, 3)
+            .withProperties(Map.of("Number of columns", 3, "Number of rows", 3));
     NetworkTableEntry ntLeftTalon = motors.add(Keys.leftTalon, 0).withWidget(BuiltInWidgets.kNumberBar).getEntry();
-     NetworkTableEntry ntLeftVictor = motors.add(Keys.leftVictor, 0).withWidget(BuiltInWidgets.kNumberBar).getEntry();
-     NetworkTableEntry ntRightTalon = motors.add(Keys.rightTalon, 0).withWidget(BuiltInWidgets.kNumberBar).getEntry();
-     NetworkTableEntry ntRightVictor = motors.add(Keys.rightVictor, 0).withWidget(BuiltInWidgets.kNumberBar).getEntry();
+    NetworkTableEntry ntLeftVictor = motors.add(Keys.leftVictor, 0).withWidget(BuiltInWidgets.kNumberBar).getEntry();
+    NetworkTableEntry ntRightTalon = motors.add(Keys.rightTalon, 0).withWidget(BuiltInWidgets.kNumberBar).getEntry();
+    NetworkTableEntry ntRightVictor = motors.add(Keys.rightVictor, 0).withWidget(BuiltInWidgets.kNumberBar).getEntry();
 
-     //TODO: make a better graph widget, with timestamps, and grab encoder values in a thread
-     NetworkTableEntry ntLeftEncoderVelocity = motors.add(Keys.leftDriveEncoderVelocity, 0).withWidget(BuiltInWidgets.kGraph).getEntry();
-     NetworkTableEntry ntLeftEncoderPosition = motors.add(Keys.leftDriveEncoderPosition, 0).withWidget(BuiltInWidgets.kNumberBar).getEntry();
-     NetworkTableEntry ntRightEncoderVelocity = motors.add(Keys.rightDriveEncoderVelocity, 0).withWidget(BuiltInWidgets.kGraph).getEntry();
-     NetworkTableEntry ntRightEncoderPosition = motors.add(Keys.rightDriveEncoderPosition, 0).withWidget(BuiltInWidgets.kNumberBar).getEntry();
+    // TODO: make a better graph widget, with timestamps, and grab encoder values in
+    // a thread
+    NetworkTableEntry ntLeftEncoderVelocity = motors.add(Keys.leftDriveEncoderVelocity, 0)
+            .withWidget(BuiltInWidgets.kGraph).getEntry();
+    NetworkTableEntry ntLeftEncoderPosition = motors.add(Keys.leftDriveEncoderPosition, 0)
+            .withWidget(BuiltInWidgets.kNumberBar).getEntry();
+    NetworkTableEntry ntRightEncoderVelocity = motors.add(Keys.rightDriveEncoderVelocity, 0)
+            .withWidget(BuiltInWidgets.kGraph).getEntry();
+    NetworkTableEntry ntRightEncoderPosition = motors.add(Keys.rightDriveEncoderPosition, 0)
+            .withWidget(BuiltInWidgets.kNumberBar).getEntry();
+    */
+    NetworkTableEntry ntMaxVel = driveTab.add("Max Velocity", 0).getEntry();
 
-     NetworkTableEntry ntMaxVel = driveTab.add("Max Velocity", 0).getEntry();
-     private DifferentialDrive m_DifferentialDrive = new DifferentialDrive(leftTalon, rightTalon);
-    
     private Drive() {
-        new PIDWidget("Drive PID", driveTab).addListener(new PIDUpdateListener());
+        new PIDWidget("Drive PID", driveTab, kP, kI, kD, kF).addListener(new PIDUpdateListener());
     }
 
     public static Drive getInstance() {
@@ -81,10 +89,10 @@ public class Drive extends Subsystem {
 
     public void init() {
         configureTalons();
-        m_DifferentialDrive.setRightSideInverted(false);
     }
 
     public void outputTelemetry() {
+        /*
         ntLeftTalon.setDouble(leftTalon.getMotorOutputPercent());
         ntLeftVictor.setDouble(leftVictor.getMotorOutputPercent());
         ntRightTalon.setDouble(rightTalon.getMotorOutputPercent());
@@ -93,6 +101,7 @@ public class Drive extends Subsystem {
         ntLeftEncoderPosition.setDouble(leftTalon.getSelectedSensorPosition());
         ntRightEncoderVelocity.setDouble(rightTalon.getSelectedSensorVelocity());
         ntRightEncoderPosition.setDouble(rightTalon.getSelectedSensorPosition());
+        */
         ntMaxVel.setDouble(max_vel);
     }
 
@@ -101,33 +110,29 @@ public class Drive extends Subsystem {
 
     private void updatePID(double p, double i, double d, double f) {
         m_autonEnabled = false;
-        kP = p;
-        kI = i;
-        kD = d;
-        kF = f;
+        this.P = p;
+        this.I = i;
+        this.D = d;
+        this.F = f;
+        System.out.println("P: " + p + ", I: " + i + ", D: " + D + ", F: " + F);
         configureTalonPID();
     }
+
     public void teleopInit() {
-        max_vel = 0;
-        leftVictor.follow(leftTalon);
-        rightVictor.follow(rightTalon);
-        /*
-        new Thread() {
-            public void run() {
-                while (true) {
-                    int vel = rightTalon.getSelectedSensorVelocity();
-                    if (vel > max_vel) {
-                        max_vel = vel;
-                    }
-                    Timer.delay(0.1);
-                }
-            }
-        }.start();
-        */
+
     }
 
     public void teleopPeriodic() {
-        m_DifferentialDrive.curvatureDrive(OI.getInstance().getForwardSpeed(), OI.getInstance().getCurvature(), false);
+        double forward = OI.getInstance().getForwardSpeed();
+        double curve = OI.getInstance().getCurvature();
+        double lo = forward, ro = forward;
+        if (curve < 0) {
+            lo += (curve * forward);
+        } else {
+            ro -= (curve * forward);
+        }
+        leftTalon.set(ControlMode.PercentOutput, lo);
+        rightTalon.set(ControlMode.PercentOutput, ro);
     }
 
     public void autonInit() {
@@ -143,13 +148,15 @@ public class Drive extends Subsystem {
         if (m_autonEnabled) {
             double lo = 0, ro = 0;
             if (current_seg < leftPath.length) {
-                lo = leftPath[current_seg].velocity *k_encoderTicksPerInch;
-                ro = rightPath[current_seg].velocity *k_encoderTicksPerInch;
+                ro = leftPath[current_seg].velocity * k_inchesPerSecondToUnitsPer100Millis;
+                lo = rightPath[current_seg].velocity * k_inchesPerSecondToUnitsPer100Millis;
                 current_seg++;
                 leftTalon.set(ControlMode.Velocity, lo);
                 rightTalon.set(ControlMode.Velocity, ro);
+                System.out.println(lo + ", " + leftTalon.getClosedLoopError(0) + ", " + rightTalon.getClosedLoopError(0));
             } else if (current_seg == leftPath.length) {
                 System.out.println("Path Complete");
+                m_autonEnabled = false;
             } else {
                 leftTalon.set(ControlMode.Velocity, 0);
                 rightTalon.set(ControlMode.Velocity, 0);
@@ -167,6 +174,7 @@ public class Drive extends Subsystem {
         leftTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
         rightTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
         leftTalon.setSensorPhase(OI.k_phaseSensor);
+        rightTalon.setSensorPhase(OI.k_phaseSensor);
         leftTalon.configNominalOutputForward(0);
         rightTalon.configNominalOutputForward(0);
         leftTalon.configNominalOutputReverse(0);
@@ -176,6 +184,9 @@ public class Drive extends Subsystem {
         leftTalon.configPeakOutputReverse(-1);
         rightTalon.configPeakOutputReverse(-1);
 
+        leftVictor.follow(leftTalon);
+        rightVictor.follow(rightTalon);
+
         rightTalon.setInverted(true);
         leftTalon.setInverted(false);
         rightVictor.setInverted(InvertType.FollowMaster);
@@ -184,19 +195,34 @@ public class Drive extends Subsystem {
         configureTalonPID();
     }
 
-    private void configureTalonPID() {
-        leftTalon.config_kP(0, kP);
-        leftTalon.config_kI(0, kI);
-        leftTalon.config_kD(0, kD);
-        leftTalon.config_kF(0, kF);
-
-        rightTalon.config_kP(0, kP);
-        rightTalon.config_kI(0, kI);
-        rightTalon.config_kD(0, kD);
-        rightTalon.config_kF(0, kF);
+    private void startMaxVelThread() {
+        max_vel = 0;
+        new Thread() { 
+            public void run() { 
+                while (true) { 
+                    int vel = Math.abs(rightTalon.getSelectedSensorVelocity()); 
+                    if (vel > max_vel) { 
+                        max_vel = vel; 
+                    }
+                Timer.delay(0.1); 
+                } 
+            } 
+        }.start();
     }
 
-    private class PIDUpdateListener implements Consumer<PIDList>{
+    private void configureTalonPID() {
+        leftTalon.config_kP(0, P);
+        leftTalon.config_kI(0, I);
+        leftTalon.config_kD(0, D);
+        leftTalon.config_kF(0, F);
+
+        rightTalon.config_kP(0, P);
+        rightTalon.config_kI(0, I);
+        rightTalon.config_kD(0, D);
+        rightTalon.config_kF(0, F);
+    }
+
+    private class PIDUpdateListener implements Consumer<PIDList> {
         public void accept(PIDList list) {
             updatePID(list.P, list.I, list.D, list.F);
         }
