@@ -31,28 +31,6 @@
                 "windowsx86-64",
                 "linuxx86-64"
             ]
-        },
-        {
-            "groupId": "com.ctre.phoenix",
-            "artifactId": "canutils",
-            "version": "5.14.1",
-            "isJar": false,
-            "skipInvalidPlatforms": true,
-            "validPlatforms": [
-                "windowsx86-64",
-                "linuxx86-64"
-            ]
-        },
-        {
-            "groupId": "com.ctre.phoenix",
-            "artifactId": "platform-stub",
-            "version": "5.14.1",
-            "isJar": false,
-            "skipInvalidPlatforms": true,
-            "validPlatforms": [
-                "windowsx86-64",
-                "linuxx86-64"
-            ]
         }
     ],
     "cppDependencies": [
@@ -94,32 +72,6 @@
             "skipInvalidPlatforms": true,
             "binaryPlatforms": [
                 "linuxathena",
-                "windowsx86-64",
-                "linuxx86-64"
-            ]
-        },
-        {
-            "groupId": "com.ctre.phoenix",
-            "artifactId": "canutils",
-            "version": "5.14.1",
-            "libName": "CTRE_PhoenixCanutils",
-            "headerClassifier": "headers",
-            "sharedLibrary": false,
-            "skipInvalidPlatforms": true,
-            "binaryPlatforms": [
-                "windowsx86-64",
-                "linuxx86-64"
-            ]
-        },
-        {
-            "groupId": "com.ctre.phoenix",
-            "artifactId": "platform-stub",
-            "version": "5.14.1",
-            "libName": "CTRE_PhoenixPlatform",
-            "headerClassifier": "headers",
-            "sharedLibrary": false,
-            "skipInvalidPlatforms": true,
-            "binaryPlatforms": [
                 "windowsx86-64",
                 "linuxx86-64"
             ]
