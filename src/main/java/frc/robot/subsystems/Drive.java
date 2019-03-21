@@ -83,7 +83,7 @@ public class Drive extends Subsystem {
         WidgetProperties[] widgets = {
             leftTalon, leftVictor, rightTalon, rightVictor, leftEncoderVelocity, rightEncoderVelocity, leftError, rightError
         };
-        LayoutBuilder.buildLayout("Drive", BuiltInLayouts.kList, driveTab, widgets);
+        LayoutBuilder.buildLayout("Drive", BuiltInLayouts.kGrid, driveTab, widgets);
     }
 
     public static Drive getInstance() {

@@ -13,7 +13,9 @@ public class LayoutBuilder {
         NetworkTableEntry[] ret = new NetworkTableEntry[subWidgets.length];
         for (WidgetProperties props : subWidgets) {
             NetworkTableEntry entry = layout.add(props.title, props.defaultValue).withWidget(props.type).getEntry();
-            props.entryHandle.setEntry(entry);
+            if (props.entryHandle!= null){
+                props.entryHandle.setEntry(entry);
+            }
             if (props.listener != null) {entry.addListener(props.listener, EntryListenerFlags.kUpdate);}
         }
         return ret;

@@ -13,8 +13,8 @@ public class OI {
     private int m_povPrev = 0;
 
     // Declare PWM and CAN ports
-    public static final int k_pwmElevatorMotor = 0;
-    public static final int k_pwmIntakeMotor = 1;
+    public static final int k_canElevatorMotor = 5;
+    public static final int k_pwmIntakeMotor = 0;
     public static final int k_canLeftDriveTalonID = 1;
     public static final int k_canLeftDriveVictorID = 3;
     public static final int k_canRightDriveTalonID = 2;

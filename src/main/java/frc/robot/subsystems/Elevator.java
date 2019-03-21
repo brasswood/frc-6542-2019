@@ -2,6 +2,8 @@ package frc.robot.subsystems;
 
 import java.util.function.Consumer;
 
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -13,7 +15,7 @@ import frc.robot.dashboard.Keys;
 
 public class Elevator extends Subsystem {
 
-  private Spark m_elevatorSpark = new Spark(OI.k_pwmElevatorMotor);
+  private WPI_TalonSRX m_elevatorMotor = new WPI_TalonSRX(OI.k_canElevatorMotor);
   private static Elevator m_instance;
   private Timer m_holdTimer = new Timer();
   private boolean m_timerStarted = false;
@@ -24,7 +26,7 @@ public class Elevator extends Subsystem {
   private final double k_downDirection = -1.0;
   private final double k_upSpeed = 1;
   private final double k_downSpeed = 0.5;
-  private final double k_holdSpeed = 0.21;
+  private final double k_holdSpeed = 0.1;
   private final double k_maxCurrent = 70;
   private final double k_maxStallTime = 2.5;
 
@@ -43,7 +45,7 @@ public class Elevator extends Subsystem {
 
   @Override
   public void outputTelemetry() {
-    SmartDashboard.putData(Keys.elevatorSpark, m_elevatorSpark);
+    SmartDashboard.putData(Keys.elevatorSpark, m_elevatorMotor);
   }
 
   @Override
@@ -87,7 +89,7 @@ public class Elevator extends Subsystem {
     } else {
       output = k_holdSpeed * k_upDirection;
     }
-    m_elevatorSpark.set(output);
+    m_elevatorMotor.set(output);
   }
 
   public void goToPosition(ElevatorPosition desiredPosition) {
