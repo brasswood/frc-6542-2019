@@ -19,6 +19,7 @@ public class OI {
     public static final int k_canRightDriveTalonID = 2;
     public static final int k_canRightDriveVictorID = 4;
     public static final int k_canPDPID = 0;
+    public static final int k_pwmIntakeMotor = 0;
 
     // Declare PDP ports
     public static final int k_pdpLeftDrive1 = 1;
@@ -76,6 +77,18 @@ public class OI {
 
     public boolean getElevatorDownButton(){
         return m_controlPad.getBumper(Hand.kLeft);
+    }
+
+    public int getIntakeButton() {
+        if (m_controlPad.getAButton()) {
+            return -1;
+        }
+        else if (m_controlPad.getBButton()){
+            return 1;
+        }
+        else {
+            return 0;
+        }
     }
 
     public static OI getInstance() {
