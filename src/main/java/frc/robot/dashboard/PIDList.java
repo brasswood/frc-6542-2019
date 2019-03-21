@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.dashboard;
 
 public class PIDList {
     public final double P;

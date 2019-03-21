@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.dashboard;
 
 import java.util.ArrayList;
 import java.util.List;

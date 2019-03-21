@@ -7,8 +7,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.OI;
-import frc.robot.PIDList;
-import frc.robot.PIDWidget;
+import frc.robot.dashboard.PIDList;
+import frc.robot.dashboard.PIDWidget;
 import frc.robot.dashboard.Keys;
 
 public class Elevator extends Subsystem {

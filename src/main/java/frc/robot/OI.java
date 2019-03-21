@@ -21,6 +21,9 @@ public class OI {
     public static final int k_canRightDriveVictorID = 4;
     public static final int k_canPDPID = 0;
 
+    // Potentiometer port
+    public static final int k_intakePotPort = 0;
+
     // Declare PDP ports
     public static final int k_pdpLeftDrive1 = 1;
     public static final int k_pdpLeftDrive2 = -1;

@@ -11,21 +11,24 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 
 import frc.robot.OI;
-import frc.robot.PIDList;
-import frc.robot.PIDWidget;
+import frc.robot.dashboard.PIDList;
+import frc.robot.dashboard.PIDWidget;
+import frc.robot.dashboard.WidgetProperties;
 import frc.robot.dashboard.Keys;
+import frc.robot.dashboard.LayoutBuilder;
+import frc.robot.dashboard.NetworkTableHandle;
 import jaci.pathfinder.PathfinderJNI;
 import jaci.pathfinder.Trajectory;
 import jaci.pathfinder.Trajectory.Segment;
@@ -45,7 +48,6 @@ public class Drive extends Subsystem {
     private Segment[] rightPath;
     private int current_seg = 0;
 
-    ShuffleboardTab driveTab = Shuffleboard.getTab(Keys.Tabs.tab_Drive);
 
     private final double k_wheelDiameter = 6;
     private final int k_encoderTicksPerRev = 4096;
@@ -55,29 +57,33 @@ public class Drive extends Subsystem {
     private final double kP = 1.7, kI = 0, kD = 0, kF = k_talonMaxOutput / k_maxVelInUnitsPer100Millis;
     private double P = kP, I = kI, D = kD, F = kF;
 
-    /*
-    ShuffleboardLayout motors = driveTab.getLayout(Keys.Widgets.layout_Motors, BuiltInLayouts.kGrid).withSize(3, 3)
-            .withProperties(Map.of("Number of columns", 3, "Number of rows", 3));
-    NetworkTableEntry ntLeftTalon = motors.add(Keys.leftTalon, 0).withWidget(BuiltInWidgets.kNumberBar).getEntry();
-    NetworkTableEntry ntLeftVictor = motors.add(Keys.leftVictor, 0).withWidget(BuiltInWidgets.kNumberBar).getEntry();
-    NetworkTableEntry ntRightTalon = motors.add(Keys.rightTalon, 0).withWidget(BuiltInWidgets.kNumberBar).getEntry();
-    NetworkTableEntry ntRightVictor = motors.add(Keys.rightVictor, 0).withWidget(BuiltInWidgets.kNumberBar).getEntry();
-
+    private final NetworkTableHandle ntLeftTalon = new NetworkTableHandle();
+    private final NetworkTableHandle ntLeftVictor = new NetworkTableHandle();
+    private final NetworkTableHandle ntRightTalon = new NetworkTableHandle();
+    private final NetworkTableHandle ntRightVictor = new NetworkTableHandle();
     // TODO: make a better graph widget, with timestamps, and grab encoder values in
     // a thread
-    NetworkTableEntry ntLeftEncoderVelocity = motors.add(Keys.leftDriveEncoderVelocity, 0)
-            .withWidget(BuiltInWidgets.kGraph).getEntry();
-    NetworkTableEntry ntLeftEncoderPosition = motors.add(Keys.leftDriveEncoderPosition, 0)
-            .withWidget(BuiltInWidgets.kNumberBar).getEntry();
-    NetworkTableEntry ntRightEncoderVelocity = motors.add(Keys.rightDriveEncoderVelocity, 0)
-            .withWidget(BuiltInWidgets.kGraph).getEntry();
-    NetworkTableEntry ntRightEncoderPosition = motors.add(Keys.rightDriveEncoderPosition, 0)
-            .withWidget(BuiltInWidgets.kNumberBar).getEntry();
-    */
-    NetworkTableEntry ntMaxVel = driveTab.add("Max Velocity", 0).getEntry();
+    private final NetworkTableHandle ntLeftEncoderVelocity = new NetworkTableHandle();
+    private final NetworkTableHandle ntRightEncoderVelocity = new NetworkTableHandle();
+
+    private final NetworkTableHandle ntLeftError = new NetworkTableHandle();
+    private final NetworkTableHandle ntRightError = new NetworkTableHandle();
 
     private Drive() {
+        ShuffleboardTab driveTab = Shuffleboard.getTab(Keys.Tabs.tab_Drive);
         new PIDWidget("Drive PID", driveTab, kP, kI, kD, kF).addListener(new PIDUpdateListener());
+        WidgetProperties leftTalon = new WidgetProperties(ntLeftTalon, "Left Talon", BuiltInWidgets.kNumberBar, null, 0);
+        WidgetProperties rightTalon = new WidgetProperties(ntRightTalon, "Right Talon", BuiltInWidgets.kNumberBar, null, 0);
+        WidgetProperties rightVictor = new WidgetProperties(ntRightVictor, "Right Victor", BuiltInWidgets.kNumberBar, null, 0);
+        WidgetProperties leftVictor = new WidgetProperties(ntLeftVictor, "Left Victor", BuiltInWidgets.kNumberBar, null, 0);
+        WidgetProperties leftEncoderVelocity = new WidgetProperties(ntLeftEncoderVelocity, "Left Encoder Velocity", BuiltInWidgets.kGraph, null, 0);
+        WidgetProperties rightEncoderVelocity = new WidgetProperties(ntRightEncoderVelocity, "Right Encoder Velocity", BuiltInWidgets.kGraph, null, 0);
+        WidgetProperties rightError = new WidgetProperties(ntLeftError, "Left Error", BuiltInWidgets.kGraph, null, 0);
+        WidgetProperties leftError = new WidgetProperties(ntRightError, "Right Error", BuiltInWidgets.kGraph, null, 0);
+        WidgetProperties[] widgets = {
+            leftTalon, leftVictor, rightTalon, rightVictor, leftEncoderVelocity, rightEncoderVelocity, leftError, rightError
+        };
+        LayoutBuilder.buildLayout("Drive", BuiltInLayouts.kList, driveTab, widgets);
     }
 
     public static Drive getInstance() {
@@ -92,17 +98,13 @@ public class Drive extends Subsystem {
     }
 
     public void outputTelemetry() {
-        /*
         ntLeftTalon.setDouble(leftTalon.getMotorOutputPercent());
         ntLeftVictor.setDouble(leftVictor.getMotorOutputPercent());
         ntRightTalon.setDouble(rightTalon.getMotorOutputPercent());
         ntRightVictor.setDouble(rightVictor.getMotorOutputPercent());
         ntLeftEncoderVelocity.setDouble(leftTalon.getSelectedSensorVelocity());
-        ntLeftEncoderPosition.setDouble(leftTalon.getSelectedSensorPosition());
         ntRightEncoderVelocity.setDouble(rightTalon.getSelectedSensorVelocity());
-        ntRightEncoderPosition.setDouble(rightTalon.getSelectedSensorPosition());
-        */
-        ntMaxVel.setDouble(max_vel);
+        
     }
 
     public void doRun() {
@@ -227,4 +229,5 @@ public class Drive extends Subsystem {
             updatePID(list.P, list.I, list.D, list.F);
         }
     }
+
 }
