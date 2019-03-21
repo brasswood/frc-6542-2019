@@ -1,13 +1,13 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.Spark;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.OI;
 import frc.robot.dashboard.Keys;
 
 public class Elevator extends Subsystem {
 
-    private Spark m_elevatorSpark = new Spark(OI.k_pwmElevatorMotor);
+    private WPI_TalonSRX m_elevatorMotor = new WPI_TalonSRX(OI.k_canElevatorMotor);
     private static Elevator m_instance;
 
     private Elevator() {}
@@ -21,7 +21,7 @@ public class Elevator extends Subsystem {
     
     @Override
     public void outputTelemetry() {
-        SmartDashboard.putData(Keys.elevatorSpark, m_elevatorSpark);
+        SmartDashboard.putData(Keys.elevatorSpark, m_elevatorMotor);
     }
 
     @Override
@@ -32,13 +32,13 @@ public class Elevator extends Subsystem {
     @Override
     public void doRun() {
         if (OI.getInstance().getElevatorUpButton() == true){
-            m_elevatorSpark.set(1.0);
+            m_elevatorMotor.set(1.0);
           } 
           else if (OI.getInstance().getElevatorDownButton() == true){
-            m_elevatorSpark.set(-1.0);
+            m_elevatorMotor.set(-1.0);
           }
           else {
-            m_elevatorSpark.set(0);
+            m_elevatorMotor.set(0);
           }
     }
 
