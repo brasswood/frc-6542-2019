@@ -35,10 +35,10 @@ public class Elevator extends Subsystem {
             m_elevatorMotor.set(1.0);
           } 
           else if (OI.getInstance().getElevatorDownButton() == true){
-            m_elevatorMotor.set(-1.0);
+            m_elevatorMotor.set(-0.3);
           }
           else {
-            m_elevatorMotor.set(0);
+            m_elevatorMotor.set(0.1);
           }
     }
 
