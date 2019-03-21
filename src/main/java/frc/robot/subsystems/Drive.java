@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Map;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import frc.robot.OI;
@@ -57,11 +58,13 @@ public class Drive extends Subsystem {
     }
 
     public void init() {
+        rightTalon.setNeutralMode(NeutralMode.Brake);
+        leftTalon.setNeutralMode(NeutralMode.Brake);
     }
     private void setDriveMotors() {
         OI oi = OI.getInstance();
         m_DifferentialDrive.curvatureDrive(oi.getForwardSpeed(), oi.getCurvature(), false);
-    }
+        }
 
     public void outputTelemetry() {
         ntLeftTalon.setDouble(leftTalon.getMotorOutputPercent());

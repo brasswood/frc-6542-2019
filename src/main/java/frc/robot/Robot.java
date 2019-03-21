@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.cscore.VideoMode.PixelFormat;
-import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -51,7 +51,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // myTalon.set(ControlMode.PercentOutput, 0);
     UsbCamera cam = CameraServer.getInstance().startAutomaticCapture();
-    cam.setVideoMode(RedCamera.kFormat, RedCamera.kWidth, RedCamera.kHeight, RedCamera.kFps);
+    // cam.setVideoMode(RedCamera.kFormat, RedCamera.kWidth, RedCamera.kHeight, RedCamera.kFps);
     m_subsystemManager.initialize();
   }
 
