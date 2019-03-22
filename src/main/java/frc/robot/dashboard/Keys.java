@@ -19,8 +19,9 @@ public final class Keys {
     public static final String drivePIDToggle = "Send PID";
 
     public static class Tabs {
-        public static final String tab_Drive = "Drive";
-        public static final String tab_Subsystems = "Subsystems";
+        public static final String tab_Control = "Control";
+        public static final String tab_Debug = "Debug";
+        public static final String tab_Calibrate = "Calibrate";
     }
     public static class Widgets {
         public static final String widget_Intake = "Intake";

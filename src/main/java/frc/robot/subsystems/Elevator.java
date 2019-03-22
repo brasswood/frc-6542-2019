@@ -59,8 +59,7 @@ public class Elevator extends Subsystem {
 
 
   private Elevator() {
-    ShuffleboardTab tab_intake = Shuffleboard.getTab(Keys.Tabs.tab_Subsystems);
-    new PIDWidget("Elevator PID", tab_intake, kP, kI, kD, kF).addListener(new PIDUpdateListener());
+    new PIDWidget("Elevator PID", Shuffleboard.getTab(Keys.Tabs.tab_Calibrate), kP, kI, kD, kF).addListener(new PIDUpdateListener());
     WidgetProperties output = new WidgetProperties(ntOutput, "Output", BuiltInWidgets.kNumberBar, null, 0);
     WidgetProperties position = new WidgetProperties(ntPosition, "Position", BuiltInWidgets.kTextView, null, 0);
     WidgetProperties setpoint = new WidgetProperties(ntSetpoint, "Setpoint", BuiltInWidgets.kTextView, null, 0);
@@ -72,10 +71,11 @@ public class Elevator extends Subsystem {
     for (ElevatorPosition p : ElevatorPosition.values()) {
       positionsArray.add(new WidgetProperties(p.handle, p.title, BuiltInWidgets.kToggleButton, new PositionListener(p), false));
     }
-    LayoutBuilder.buildLayout("Positions", BuiltInLayouts.kList, tab_intake, 2, 5, positionsArray.toArray(new WidgetProperties[positionsArray.size()]));
+    LayoutBuilder.buildLayout("Elevator Positions", BuiltInLayouts.kList, Shuffleboard.getTab(Keys.Tabs.tab_Control), 2, 5, positionsArray.toArray(new WidgetProperties[positionsArray.size()]));
     
-    WidgetProperties[] elevatorWidgetArray = {output, position, setpoint, error, calibrated, calibrateButton};
-    LayoutBuilder.buildLayout("Elevator", BuiltInLayouts.kGrid, tab_intake, 5, 5, elevatorWidgetArray);
+    WidgetProperties[] elevatorWidgetArray = {output, position, setpoint, error};
+    LayoutBuilder.buildLayout("Elevator", BuiltInLayouts.kList, Shuffleboard.getTab(Keys.Tabs.tab_Debug), 5, 5, elevatorWidgetArray);
+    LayoutBuilder.buildLayout("Elevator", BuiltInLayouts.kList, Shuffleboard.getTab(Keys.Tabs.tab_Calibrate), 1, 1, new WidgetProperties[]{calibrated, calibrateButton});
 
   }
 

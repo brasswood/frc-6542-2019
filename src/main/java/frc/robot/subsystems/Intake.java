@@ -3,13 +3,15 @@ package frc.robot.subsystems;
 import java.util.function.Consumer;
 
 import edu.wpi.first.networktables.EntryNotification;
-import edu.wpi.first.wpilibj.AnalogPotentiometer;
+import edu.wpi.first.wpilibj.Counter;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import frc.robot.OI;
+import frc.robot.SeatMotorCounter;
 import frc.robot.dashboard.PIDList;
 import frc.robot.dashboard.PIDWidget;
 import frc.robot.dashboard.WidgetProperties;
@@ -23,32 +25,41 @@ public class Intake extends Subsystem {
     private final double kP = 0, kI = 0, kD = 0, kF = 0;
     private double P, I, D, F;
     private boolean m_manualControl;
+    private boolean m_isCalibrated = false;
 
     private final NetworkTableHandle ntOutput = new NetworkTableHandle();
-    private final NetworkTableHandle ntPotentiometer = new NetworkTableHandle();
+    private final NetworkTableHandle ntCounter = new NetworkTableHandle();
     private final NetworkTableHandle ntSetpoint = new NetworkTableHandle();
     private final NetworkTableHandle ntError = new NetworkTableHandle();
+    private final NetworkTableHandle ntIsCalibrated = new NetworkTableHandle();
 
     private Spark intakeMotor = new Spark(OI.k_pwmIntakeMotor);
-    private AnalogPotentiometer potentiometer = new AnalogPotentiometer(OI.k_intakePotPort);
+    private int k_encoderPort = 0;
 
-    private final PIDController cont = new PIDController(kP, kI, kD, kF, potentiometer, intakeMotor);
+    // private final SeatMotorCounter counter = new SeatMotorCounter(k_encoderPort, () -> {return (int) Math.signum(intakeMotor.get());});
+    private final Counter counter = new Counter(new DigitalInput(k_encoderPort));
+    private final PIDController cont = new PIDController(kP, kI, kD, kF, counter, intakeMotor);
 
     private final double multiplier = 1;
 
     private Intake() {
-        new PIDWidget("Intake PID", Shuffleboard.getTab(Keys.Tabs.tab_Subsystems), kP, kI, kD, kF).addListener(new PIDUpdateListener());
+        new PIDWidget("Intake PID", Shuffleboard.getTab(Keys.Tabs.tab_Calibrate), kP, kI, kD, kF).addListener(new PIDUpdateListener());
         cont.setPercentTolerance(5);
         WidgetProperties output = new WidgetProperties(ntOutput, "Output", BuiltInWidgets.kNumberBar, null, 0);
-        WidgetProperties potentiometer = new WidgetProperties(ntPotentiometer, "Potentiometer", BuiltInWidgets.kNumberBar, null, 0);
+        WidgetProperties counter = new WidgetProperties(ntCounter, "Counter", BuiltInWidgets.kTextView, null, 0);
         WidgetProperties fullyUp = new WidgetProperties(null, "Fully Up", BuiltInWidgets.kToggleButton, new SetpointListener(IntakePosition.k_fullyUp), false);
         WidgetProperties levelGround = new WidgetProperties(null, "Level Ground", BuiltInWidgets.kToggleButton, new SetpointListener(IntakePosition.k_levelGround), false);
         WidgetProperties touchingGround = new WidgetProperties(null, "Touching Ground", BuiltInWidgets.kToggleButton, new SetpointListener(IntakePosition.k_touchingGround), false);
         WidgetProperties ballHold = new WidgetProperties(null, "Ball Hold", BuiltInWidgets.kToggleButton, new SetpointListener(IntakePosition.k_ballHold), false);
         WidgetProperties error = new WidgetProperties(ntError, "Error", null, 0);
         WidgetProperties setpoint = new WidgetProperties(ntSetpoint, "Setpoint", null, 0);
-        WidgetProperties[] widgets = {output, potentiometer, fullyUp, levelGround, touchingGround, ballHold, setpoint, error};
-        LayoutBuilder.buildLayout("Intake", BuiltInLayouts.kList, Shuffleboard.getTab(Keys.Tabs.tab_Subsystems), 5, 5, widgets);
+        WidgetProperties isCalibrated = new WidgetProperties(ntIsCalibrated, "Calibrated", null, m_isCalibrated);
+        WidgetProperties calibrate = new WidgetProperties(null, "Calibrate", notification -> {m_isCalibrated = (boolean) notification.value.getValue();}, false);
+        
+        
+        LayoutBuilder.buildLayout("Intake Positions", BuiltInLayouts.kList, Shuffleboard.getTab(Keys.Tabs.tab_Control), 1, 1, new WidgetProperties[]{fullyUp, levelGround, touchingGround, ballHold});
+        LayoutBuilder.buildLayout("Intake Debug", BuiltInLayouts.kList, Shuffleboard.getTab(Keys.Tabs.tab_Debug), 5, 5, new WidgetProperties[]{output, counter, setpoint, error});
+        LayoutBuilder.buildLayout("Intake Calibration", BuiltInLayouts.kList, Shuffleboard.getTab(Keys.Tabs.tab_Calibrate), 1, 1, new WidgetProperties[]{isCalibrated, calibrate});
     }
 
     public static Intake getInstance() {
@@ -69,9 +80,9 @@ public class Intake extends Subsystem {
     @Override
     public void outputTelemetry() {
         ntOutput.setDouble(intakeMotor.get());
-        ntPotentiometer.setDouble(potentiometer.get());
-        ntSetpoint.setDouble(cont.getSetpoint());
-        ntError.setDouble(cont.getError());
+        ntCounter.setDouble(counter.get());
+        // ntSetpoint.setDouble(cont.getSetpoint());
+        // ntError.setDouble(cont.getError());
     }
 
     @Override
@@ -124,4 +135,5 @@ public class Intake extends Subsystem {
         }
         
     }
+
 }

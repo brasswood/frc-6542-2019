@@ -86,14 +86,8 @@ public class OI {
         return m_controlPad.getBumper(Hand.kLeft);
     }
 
-    public int getIntakeButton() {
-        if (m_controlPad.getAButton()) {
-            return -1;
-        } else if (m_controlPad.getBButton()) {
-            return 1;
-        } else {
-            return 0;
-        }
+    public double getIntakeButton() {
+        return -m_controlPad.getY(Hand.kRight);
     }
 
     public static OI getInstance() {

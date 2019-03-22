@@ -70,8 +70,7 @@ public class Drive extends Subsystem {
     private final NetworkTableHandle ntRightError = new NetworkTableHandle();
 
     private Drive() {
-        ShuffleboardTab driveTab = Shuffleboard.getTab(Keys.Tabs.tab_Drive);
-        new PIDWidget("Drive PID", driveTab, kP, kI, kD, kF).addListener(new PIDUpdateListener());
+        new PIDWidget("Drive PID", Shuffleboard.getTab(Keys.Tabs.tab_Calibrate), kP, kI, kD, kF).addListener(new PIDUpdateListener());
         WidgetProperties leftTalon = new WidgetProperties(ntLeftTalon, "Left Talon", BuiltInWidgets.kNumberBar, null, 0);
         WidgetProperties rightTalon = new WidgetProperties(ntRightTalon, "Right Talon", BuiltInWidgets.kNumberBar, null, 0);
         WidgetProperties rightVictor = new WidgetProperties(ntRightVictor, "Right Victor", BuiltInWidgets.kNumberBar, null, 0);
@@ -83,7 +82,7 @@ public class Drive extends Subsystem {
         WidgetProperties[] widgets = {
             leftTalon, leftVictor, rightTalon, rightVictor, leftEncoderVelocity, rightEncoderVelocity, leftError, rightError
         };
-        LayoutBuilder.buildLayout("Drive", BuiltInLayouts.kGrid, driveTab, 5, 5, widgets);
+        LayoutBuilder.buildLayout("Drive", BuiltInLayouts.kGrid, Shuffleboard.getTab(Keys.Tabs.tab_Debug), 5, 5, widgets);
     }
 
     public static Drive getInstance() {
