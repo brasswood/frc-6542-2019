@@ -127,6 +127,20 @@ public class Drive extends Subsystem {
     }
 
     public void teleopPeriodic() {
+        commonPeriodic();
+    }
+    public void autonInit() {
+        /*
+        current_seg = 0;
+        File leftPathFile = new File(Filesystem.getDeployDirectory(), "StraightLineTest.left.pf1.csv");
+        File rightPathFile = new File(Filesystem.getDeployDirectory(), "StraightLineTest.right.pf1.csv");
+        leftPath = PathfinderJNI.trajectoryDeserializeCSV(leftPathFile.toString());
+        rightPath = PathfinderJNI.trajectoryDeserializeCSV(rightPathFile.toString());
+        m_autonEnabled = true;
+        */
+    }
+
+    public void commonPeriodic() {
         double forward = OI.getInstance().getForwardSpeed();
         double curve = OI.getInstance().getCurvature();
         double lo = forward, ro = forward;
@@ -138,18 +152,10 @@ public class Drive extends Subsystem {
         leftTalon.set(ControlMode.PercentOutput, lo);
         rightTalon.set(ControlMode.PercentOutput, ro);
     }
-    UPDATE AUTONOMOUS MODE
-    public void autonInit() {
-        current_seg = 0;
-        File leftPathFile = new File(Filesystem.getDeployDirectory(), "StraightLineTest.left.pf1.csv");
-        File rightPathFile = new File(Filesystem.getDeployDirectory(), "StraightLineTest.right.pf1.csv");
-        leftPath = PathfinderJNI.trajectoryDeserializeCSV(leftPathFile.toString());
-        rightPath = PathfinderJNI.trajectoryDeserializeCSV(rightPathFile.toString());
-        m_autonEnabled = true;
-    }
 
     public void autonPeriodic() {
-        if (m_autonEnabled) {
+        commonPeriodic();
+        /* if (m_autonEnabled) {
             double lo = 0, ro = 0;
             if (current_seg < leftPath.length) {
                 ro = leftPath[current_seg].velocity * k_inchesPerSecondToUnitsPer100Millis;
@@ -169,6 +175,7 @@ public class Drive extends Subsystem {
             leftTalon.set(ControlMode.Velocity, 0);
             rightTalon.set(ControlMode.Velocity, 0);
         }
+        */
     }
 
     public void disabledPeriodic() {
