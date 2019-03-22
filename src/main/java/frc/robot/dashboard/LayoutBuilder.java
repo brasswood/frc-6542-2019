@@ -8,11 +8,11 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 
 public class LayoutBuilder {
 
-    public static NetworkTableEntry[] buildLayout(String title, LayoutType type, ShuffleboardContainer container, WidgetProperties[] subWidgets) {
+    public static NetworkTableEntry[] buildLayout(String title, LayoutType type, ShuffleboardContainer container, int width, int height, WidgetProperties[] subWidgets) {
         ShuffleboardLayout layout = container.getLayout(title, type);
         NetworkTableEntry[] ret = new NetworkTableEntry[subWidgets.length];
         for (WidgetProperties props : subWidgets) {
-            NetworkTableEntry entry = layout.add(props.title, props.defaultValue).withWidget(props.type).getEntry();
+            NetworkTableEntry entry = layout.add(props.title, props.defaultValue).withWidget(props.type).withSize(width, height).getEntry();
             if (props.entryHandle!= null){
                 props.entryHandle.setEntry(entry);
             }

@@ -11,7 +11,9 @@ import java.util.Arrays;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import frc.robot.subsystems.*;
+import frc.robot.vision.RedCamera;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -34,7 +36,8 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     UsbCamera cam = CameraServer.getInstance().startAutomaticCapture();
-    // cam.setVideoMode(RedCamera.kFormat, RedCamera.kWidth, RedCamera.kHeight, RedCamera.kFps);
+    cam.setVideoMode(RedCamera.kFormat, RedCamera.kWidth, RedCamera.kHeight, RedCamera.kFps);
+    Shuffleboard.getTab("Camera").add(cam).withSize(2, 2).withPosition(0, 0);
     m_subsystemManager.initialize();
   }
 

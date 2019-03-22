@@ -48,7 +48,7 @@ public class Intake extends Subsystem {
         WidgetProperties error = new WidgetProperties(ntError, "Error", null, 0);
         WidgetProperties setpoint = new WidgetProperties(ntSetpoint, "Setpoint", null, 0);
         WidgetProperties[] widgets = {output, potentiometer, fullyUp, levelGround, touchingGround, ballHold, setpoint, error};
-        LayoutBuilder.buildLayout("Intake", BuiltInLayouts.kList, Shuffleboard.getTab(Keys.Tabs.tab_Subsystems), widgets);
+        LayoutBuilder.buildLayout("Intake", BuiltInLayouts.kList, Shuffleboard.getTab(Keys.Tabs.tab_Subsystems), 5, 5, widgets);
     }
 
     public static Intake getInstance() {
@@ -94,6 +94,8 @@ public class Intake extends Subsystem {
             if (!cont.isEnabled()) {
                 cont.enable();
             }
+            System.out.println(cont.get());
+            intakeMotor.pidWrite(cont.get());
         }
     }
 
