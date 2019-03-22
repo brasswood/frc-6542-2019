@@ -21,11 +21,18 @@ public class OI {
     public static final int k_canPDPID = 0;
     public static final int k_pwmIntakeMotor = 0;
 
+    // Potentiometer port
+    public static final int k_intakePotPort = 0;
+
     // Declare PDP ports
     public static final int k_pdpLeftDrive1 = 1;
     public static final int k_pdpLeftDrive2 = -1;
     public static final int k_pdpRightDrive1 = 0;
     public static final int k_pdpRightDrive2 = -1;
+    public static final int k_pdpElevatorMotor = 12;
+
+    //Our encoder is backwards. Fix that.
+    public static final boolean k_phaseSensor = true;
 
     // Maximum elevator index
     private static final int k_maxElevatorPos = 3;
@@ -82,11 +89,9 @@ public class OI {
     public int getIntakeButton() {
         if (m_controlPad.getAButton()) {
             return -1;
-        }
-        else if (m_controlPad.getBButton()){
+        } else if (m_controlPad.getBButton()) {
             return 1;
-        }
-        else {
+        } else {
             return 0;
         }
     }
