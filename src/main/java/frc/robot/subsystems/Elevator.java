@@ -33,7 +33,8 @@ public class Elevator extends Subsystem {
   private final double k_maxStallTime = 2.5;
 
   private double kP, kI, kD, kF;
-
+BRAINSTORM ELEVATOR POSITIONS
+HAVE PID IMPLEMENTATION READY
   private Elevator() {
       new PIDWidget("Elevator PID", Shuffleboard.getTab(Keys.Tabs.tab_Subsystems)).addListener(new PIDUpdateListener());
   }

@@ -41,12 +41,13 @@ public class Intake extends Subsystem {
         cont.setPercentTolerance(5);
         WidgetProperties output = new WidgetProperties(ntOutput, "Output", BuiltInWidgets.kNumberBar, null, 0);
         WidgetProperties potentiometer = new WidgetProperties(ntPotentiometer, "Potentiometer", BuiltInWidgets.kNumberBar, null, 0);
-        WidgetProperties position1 = new WidgetProperties(null, "Position 1", BuiltInWidgets.kToggleButton, new SetpointListener(IntakePosition.k_position3), false);
-        WidgetProperties position2 = new WidgetProperties(null, "Position 2", BuiltInWidgets.kToggleButton, new SetpointListener(IntakePosition.k_position2), false);
-        WidgetProperties position3 = new WidgetProperties(null, "Position 3", BuiltInWidgets.kToggleButton, new SetpointListener(IntakePosition.k_position3), false);
+        WidgetProperties fullyUp = new WidgetProperties(null, "Fully Up", BuiltInWidgets.kToggleButton, new SetpointListener(IntakePosition.k_fullyUp), false);
+        WidgetProperties levelGround = new WidgetProperties(null, "Level Ground", BuiltInWidgets.kToggleButton, new SetpointListener(IntakePosition.k_levelGround), false);
+        WidgetProperties touchingGround = new WidgetProperties(null, "Touching Ground", BuiltInWidgets.kToggleButton, new SetpointListener(IntakePosition.k_touchingGround), false);
+        WidgetProperties ballHold = new WidgetProperties(null, "Ball Hold", BuiltInWidgets.kToggleButton, new SetpointListener(IntakePosition.k_ballHold), false);
         WidgetProperties error = new WidgetProperties(ntError, "Error", null, 0);
         WidgetProperties setpoint = new WidgetProperties(ntSetpoint, "Setpoint", null, 0);
-        WidgetProperties[] widgets = {output, potentiometer, position1, position2, position3, setpoint, error};
+        WidgetProperties[] widgets = {output, potentiometer, fullyUp, levelGround, touchingGround, ballHold, setpoint, error};
         LayoutBuilder.buildLayout("Intake", BuiltInLayouts.kList, Shuffleboard.getTab(Keys.Tabs.tab_Subsystems), widgets);
     }
 
@@ -97,7 +98,7 @@ public class Intake extends Subsystem {
     }
 
     public enum IntakePosition {
-        k_position1(0), k_position2(1), k_position3(2);
+        k_fullyUp(0.4), k_levelGround(0.6), k_touchingGround(0.63), k_ballHold(0.44);
         public double setpoint;
         private IntakePosition(double setpoint) {
             this.setpoint = setpoint;

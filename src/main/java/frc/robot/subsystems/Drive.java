@@ -138,7 +138,7 @@ public class Drive extends Subsystem {
         leftTalon.set(ControlMode.PercentOutput, lo);
         rightTalon.set(ControlMode.PercentOutput, ro);
     }
-
+    UPDATE AUTONOMOUS MODE
     public void autonInit() {
         current_seg = 0;
         File leftPathFile = new File(Filesystem.getDeployDirectory(), "StraightLineTest.left.pf1.csv");
