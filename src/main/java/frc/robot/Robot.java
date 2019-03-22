@@ -21,15 +21,7 @@ import frc.robot.subsystems.*;
  * project.
  */
 public class Robot extends TimedRobot {
-  // WPI_TalonSRX myTalon = new WPI_TalonSRX(0);
-  // Spark elevatorSpark = new Spark(OI.k_pwmElevatorMotor);
-  // DifferentialDrive myRobot;
 
-
-  public Robot() {
-    // myRobot = new DifferentialDrive(myTalon, myTalon);
-    // myRobot.setExpiration (0.1);
-  }
 
   
   /**
@@ -41,7 +33,6 @@ public class Robot extends TimedRobot {
    private final SubsystemManager m_subsystemManager = new SubsystemManager(Arrays.asList(Drive.getInstance(), Elevator.getInstance(), Power.getInstance(), Intake.getInstance()));
   @Override
   public void robotInit() {
-    // myTalon.set(ControlMode.PercentOutput, 0);
     UsbCamera cam = CameraServer.getInstance().startAutomaticCapture();
     // cam.setVideoMode(RedCamera.kFormat, RedCamera.kWidth, RedCamera.kHeight, RedCamera.kFps);
     m_subsystemManager.initialize();
@@ -79,17 +70,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testPeriodic() {
-    /*
-    if (OI.getInstance().getElevatorUpButton() == true){
-      elevatorSpark.set(0.5);
-    } 
-    else if (OI.getInstance().getElevatorDownButton() == true){
-      elevatorSpark.set(-0.5);
-    }
-    else {
-      elevatorSpark.set(0);
-    }
-    */
+
   }
 
   @Override
