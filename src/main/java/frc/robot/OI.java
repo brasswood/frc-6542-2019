@@ -13,18 +13,26 @@ public class OI {
     private int m_povPrev = 0;
 
     // Declare PWM and CAN ports
-    public static final int k_pwmElevatorMotor = 0;
+    public static final int k_canElevatorMotor = 5;
     public static final int k_canLeftDriveTalonID = 1;
     public static final int k_canLeftDriveVictorID = 3;
     public static final int k_canRightDriveTalonID = 2;
     public static final int k_canRightDriveVictorID = 4;
     public static final int k_canPDPID = 0;
+    public static final int k_pwmIntakeMotor = 0;
+
+    // Potentiometer port
+    public static final int k_intakePotPort = 0;
 
     // Declare PDP ports
     public static final int k_pdpLeftDrive1 = 1;
     public static final int k_pdpLeftDrive2 = -1;
     public static final int k_pdpRightDrive1 = 0;
     public static final int k_pdpRightDrive2 = -1;
+    public static final int k_pdpElevatorMotor = 12;
+
+    //Our encoder is backwards. Fix that.
+    public static final boolean k_phaseSensor = true;
 
     // Maximum elevator index
     private static final int k_maxElevatorPos = 3;
@@ -76,6 +84,10 @@ public class OI {
 
     public boolean getElevatorDownButton(){
         return m_controlPad.getBumper(Hand.kLeft);
+    }
+
+    public double getIntakeButton() {
+        return -m_controlPad.getY(Hand.kRight);
     }
 
     public static OI getInstance() {

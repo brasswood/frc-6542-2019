@@ -8,18 +8,13 @@
 package frc.robot;
 
 import java.util.Arrays;
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.cscore.UsbCamera;
-import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.cscore.VideoMode.PixelFormat;
-import edu.wpi.first.wpilibj.CameraServer;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.TimedRobot;
-import frc.robot.vision.RedCamera;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import frc.robot.dashboard.Keys;
 import frc.robot.subsystems.*;
+import frc.robot.vision.RedCamera;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -29,15 +24,7 @@ import frc.robot.subsystems.*;
  * project.
  */
 public class Robot extends TimedRobot {
-  // WPI_TalonSRX myTalon = new WPI_TalonSRX(0);
-  // Spark elevatorSpark = new Spark(OI.k_pwmElevatorMotor);
-  // DifferentialDrive myRobot;
 
-
-  public Robot() {
-    // myRobot = new DifferentialDrive(myTalon, myTalon);
-    // myRobot.setExpiration (0.1);
-  }
 
   
   /**
@@ -46,12 +33,12 @@ public class Robot extends TimedRobot {
    */
 
    // Create subsystem list
-   private final SubsystemManager m_subsystemManager = new SubsystemManager(Arrays.asList(Drive.getInstance(), Elevator.getInstance(), Power.getInstance()));
+   private final SubsystemManager m_subsystemManager = new SubsystemManager(Arrays.asList(Drive.getInstance(), Elevator.getInstance(), Power.getInstance(), Intake.getInstance()));
   @Override
   public void robotInit() {
-    // myTalon.set(ControlMode.PercentOutput, 0);
     UsbCamera cam = CameraServer.getInstance().startAutomaticCapture();
     cam.setVideoMode(RedCamera.kFormat, RedCamera.kWidth, RedCamera.kHeight, RedCamera.kFps);
+    Shuffleboard.getTab(Keys.Tabs.tab_Control).add(cam).withSize(2, 2).withPosition(0, 0);
     m_subsystemManager.initialize();
   }
 
@@ -59,12 +46,14 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    Drive.getInstance().autonInit();
   }
 
   @Override
   public void autonomousPeriodic() {
     m_subsystemManager.run();
     m_subsystemManager.outputToSmartDashboard();
+    Drive.getInstance().autonPeriodic();
   }
 
   @Override
@@ -76,6 +65,7 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     m_subsystemManager.run();
     m_subsystemManager.outputToSmartDashboard();
+    Drive.getInstance().teleopPeriodic();
   }
 
   @Override
@@ -84,17 +74,17 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testPeriodic() {
-    /*
-    if (OI.getInstance().getElevatorUpButton() == true){
-      elevatorSpark.set(0.5);
-    } 
-    else if (OI.getInstance().getElevatorDownButton() == true){
-      elevatorSpark.set(-0.5);
-    }
-    else {
-      elevatorSpark.set(0);
-    }
-    */
+
+  }
+
+  @Override
+  public void disabledInit() {
+
+  }
+
+  @Override
+  public void disabledPeriodic() {
+    Drive.getInstance().disabledPeriodic();
   }
 
 }

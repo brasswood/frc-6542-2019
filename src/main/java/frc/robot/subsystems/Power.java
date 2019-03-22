@@ -39,4 +39,8 @@ public class Power extends Subsystem {
     public void doRun() {
         update();
     }
+
+    public double getCurrent(int channel) {
+        return m_PDP.getCurrent(channel);
+    }
 }

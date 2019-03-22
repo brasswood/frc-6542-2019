@@ -8,10 +8,25 @@ public final class Keys {
     public static final String leftVictor = "Left Victor";
     public static final String rightVictor = "Right Victor";
     public static final String elevatorSpark = "Elevator Spark";
-    public static final String driveEncoderVelocity = "Left Drive Velocity";
-    public static final String driveEncoderPosition = "Left Drive Position";
+    public static final String leftDriveEncoderVelocity = "Left Drive Velocity";
+    public static final String leftDriveEncoderPosition = "Left Drive Position";
+    public static final String rightDriveEncoderPosition = "Right Drive Position";
+    public static final String rightDriveEncoderVelocity = "Right Drive Velocity";
+    public static final String driveP = "P";
+    public static final String driveI = "I";
+    public static final String driveD = "D";
+    public static final String driveF = "F";
+    public static final String drivePIDToggle = "Send PID";
 
-    public static final String tab_Drive = "Drive";
-    public static final String layout_Motors = "Motors";
+    public static class Tabs {
+        public static final String tab_Control = "Control";
+        public static final String tab_Debug = "Debug";
+        public static final String tab_Calibrate = "Calibrate";
+    }
+    public static class Widgets {
+        public static final String widget_Intake = "Intake";
+        public static final String layout_Motors = "Motors";
+        public static final String layout_PID = "PID";
+    }
 
 }
