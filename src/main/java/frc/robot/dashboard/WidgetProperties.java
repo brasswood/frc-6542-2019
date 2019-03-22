@@ -6,7 +6,7 @@ import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.WidgetType;
 
-public final class WidgetProperties {
+public class WidgetProperties {
     protected WidgetType type;
     protected Consumer<EntryNotification> listener;
     protected String title;
