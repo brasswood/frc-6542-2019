@@ -1,6 +1,5 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
@@ -11,8 +10,6 @@ public class OI {
     private XboxController m_controlPad = new XboxController(0); /* Must construct specific controller (ie.
     * XboxController(), Joystick()) */
     private Joystick m_controlStick = new Joystick(1);
-    private int m_elevatorPos = 0;
-    private int m_povPrev = 0;
 
     // Declare PWM and CAN ports
     public static final int k_canElevatorMotor = 5;
@@ -22,9 +19,6 @@ public class OI {
     public static final int k_canRightDriveVictorID = 4;
     public static final int k_canPDPID = 0;
     public static final int k_pwmIntakeMotor = 0;
-
-    // Potentiometer port
-    public static final int k_intakePotPort = 0;
 
     // Declare PDP ports
     public static final int k_pdpLeftDrive1 = 1;
@@ -36,36 +30,27 @@ public class OI {
     //Our encoder is backwards. Fix that.
     public static final boolean k_phaseSensor = true;
 
-    // Maximum elevator index
-    private static final int k_maxElevatorPos = 3;
-
     // Joystick (or XboxController or whatever we use) mappings
     private static final int k_rightThrottleAxis = 3;
     private static final int k_leftThrottleAxis = 2;
     private static final int k_povUp = 0;
+    private static final int k_povRight = 90;
     private static final int k_povDown = 180;
-    private static final int k_leftButton = 4;
-    private static final int k_rightButton = 5;
+    private static final int k_povLeft = 270;
+
 
     public void init() {
     }
 
     public void update() {
-        /*int pov = m_controlPad.getPOV();
-        if (m_povPrev != pov) {
-            if (pov == k_povUp) {
-                m_elevatorPos++;
-            } else if (pov == k_povDown) {
-                m_elevatorPos--;
-            }
-            if (m_elevatorPos > k_maxElevatorPos) {
-                m_elevatorPos = k_maxElevatorPos;
-            } else if (m_elevatorPos < 0) {
-                m_elevatorPos = 0;
-            }
+    }
+
+    public static double deadband(double input, double deadband) {
+        if (Math.abs(input) < deadband) {
+            return 0;
+        } else {
+            return ((1/(1-deadband))*(input-(Math.signum(input)*deadband)));
         }
-        m_povPrev = m_controlPad.getPOV();
-        */
     }
 
     public double getForwardSpeed() {
@@ -76,20 +61,28 @@ public class OI {
         return m_controlPad.getX(Hand.kLeft);
     }
 
-    public int getElevatorPos() {
-        return m_elevatorPos;
+    public double getElevatorManualSpeed() {
+        return deadband(m_controlStick.getX(), 0.1);
     }
 
     public boolean getElevatorUpButton() {
-        return (m_controlStick.getPOV() == k_povUp);
+        return (m_controlStick.getPOV() == k_povRight);
     }
 
     public boolean getElevatorDownButton(){
+        return (m_controlStick.getPOV() == k_povLeft);
+    }
+
+    public double getIntakeManualSpeed() {
+        return deadband(-m_controlStick.getY(), 0.1);
+    }
+
+    public boolean getIntakeUpButton() {
         return (m_controlStick.getPOV() == k_povDown);
     }
 
-    public double getIntake() {
-        return -m_controlStick.getY(Hand.kRight);
+    public boolean getIntakeDownButton() {
+        return (m_controlStick.getPOV() == k_povUp);
     }
 
     public static OI getInstance() {

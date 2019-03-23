@@ -30,15 +30,12 @@ public class Elevator extends Subsystem {
 
   private WPI_TalonSRX m_elevatorMotor = new WPI_TalonSRX(OI.k_canElevatorMotor);
   private static Elevator m_instance;
-  // private Timer m_holdTimer = new Timer();
   private boolean m_timerStarted = false;
-  // private ElevatorState m_state = ElevatorState.k_holding;
   private boolean m_calibrated;
   private boolean m_manualControl = true;
+  private ElevatorPosition m_elevatorPosition = ElevatorPosition.k_bottom;
 
   private boolean m_holding = true;
-
-  private double m_currentHeight;
 
   private final double k_upSpeed = 1;
   private final double k_downSpeed = -0.5;
@@ -47,7 +44,6 @@ public class Elevator extends Subsystem {
   private final double k_maxStallTime = 2.5;
 
   private final boolean k_sensorPhase = true;
-  private final boolean k_isInverted = false;
 
   private final NetworkTableHandle ntOutput = new NetworkTableHandle();
   private final NetworkTableHandle ntPosition = new NetworkTableHandle();
@@ -56,6 +52,7 @@ public class Elevator extends Subsystem {
   private final NetworkTableHandle ntCalibrated = new NetworkTableHandle();
 
   private final double kP = 0, kI = 0, kD = 0, kF = 0;
+  private final int k_error = 200;
 
 
   private Elevator() {
@@ -98,62 +95,48 @@ public class Elevator extends Subsystem {
 
   @Override
   public void init() {
-    m_currentHeight = 0;
     configureTalon();
   }
 
   @Override
   public void doRun() {
     // Poll controls to set manual mode
-    if (OI.getInstance().getElevatorUpButton() || OI.getInstance().getElevatorDownButton()) {
-      setManual(true);
+    if (OI.getInstance().getElevatorManualSpeed() != 0) {
+      m_manualControl = true;
+    } else if (OI.getInstance().getElevatorDownButton()) {
+      m_manualControl = false;
+      requestPosition(m_elevatorPosition.previous());
+    } else if (OI.getInstance().getElevatorUpButton()) {
+      m_manualControl = false;
+      requestPosition(m_elevatorPosition.next());
     }
+
     if (m_manualControl) {
-      if (OI.getInstance().getElevatorUpButton()) {
+      if (OI.getInstance().getElevatorManualSpeed() != 0) {
         m_holding = false;
-        m_elevatorMotor.set(ControlMode.PercentOutput, k_upSpeed);
-      } else if (OI.getInstance().getElevatorDownButton()) {
-        m_holding = false;
-        m_elevatorMotor.set(ControlMode.PercentOutput, k_downSpeed);
+        m_elevatorMotor.set(ControlMode.PercentOutput, OI.getInstance().getElevatorManualSpeed());
       } else {
         m_holding = true;
+      }
+    } else {
+      if (m_elevatorMotor.getClosedLoopError() <= k_error) {
+        m_holding = true;
+      } else {
+        m_holding = false;
       }
     }
 
     if (m_holding) {
       m_elevatorMotor.set(ControlMode.PercentOutput, k_holdSpeed);
     }
-
-    /*
-     * if (OI.getInstance().getElevatorUpButton() && m_state !=
-     * ElevatorState.k_protectiveHold) { if
-     * (Power.getInstance().getCurrent(OI.k_pdpElevatorMotor) > k_maxCurrent) { if
-     * (!m_timerStarted) { m_holdTimer.start(); m_timerStarted = true; } if
-     * (m_holdTimer.get() > k_maxStallTime) { m_holdTimer.stop();
-     * m_holdTimer.reset(); m_timerStarted = false; m_state =
-     * ElevatorState.k_protectiveHold; } else { m_state = ElevatorState.k_movingUp;
-     * } } else { m_holdTimer.stop(); m_holdTimer.reset(); m_timerStarted = false;
-     * m_state = ElevatorState.k_movingUp; } } else if
-     * (OI.getInstance().getElevatorDownButton()) { m_state =
-     * ElevatorState.k_movingDown; } else if (m_state !=
-     * ElevatorState.k_protectiveHold) { m_state = ElevatorState.k_holding; }
-     * 
-     * double output = 0.0; if (m_state == ElevatorState.k_movingUp) { output =
-     * k_upSpeed * k_upDirection; } else if (m_state == ElevatorState.k_movingDown)
-     * { output = k_downSpeed * k_downDirection; } else { output = k_holdSpeed *
-     * k_upDirection; } m_elevatorMotor.set(output);
-     */
   }
 
-  public void goToPosition(ElevatorPosition desiredPosition) {
+  public void requestPosition(ElevatorPosition desiredPosition) {
     if (m_calibrated) {
+      m_elevatorPosition = desiredPosition;
       m_elevatorMotor.set(ControlMode.Position, desiredPosition.heightInEncoderTicks);
       ntSetpoint.setDouble(desiredPosition.heightInEncoderTicks);
     }
-  }
-
-  private void setManual(boolean manual) {
-    m_manualControl = manual;
   }
 
   private void configureTalon() {
@@ -163,6 +146,7 @@ public class Elevator extends Subsystem {
     m_elevatorMotor.configNominalOutputReverse(0);
     m_elevatorMotor.configPeakOutputForward(1);
     m_elevatorMotor.configPeakOutputReverse(-1);
+    m_elevatorMotor.configAllowableClosedloopError(0, k_error);
 
     configureTalonPID(kP, kI, kD, kF);
   }
@@ -201,34 +185,46 @@ public class Elevator extends Subsystem {
     }
     public void accept(EntryNotification notification) {
       m_holding = false;
-      setManual(false);
-      goToPosition(listenFor);
+      m_manualControl = false;
+      requestPosition(listenFor);
     }
   }
-
-  /* public static enum ElevatorState {
-    k_autonomous, k_movingUp, k_movingDown, k_holding, k_protectiveHold;
-  }
-  */
 
   public enum ElevatorPosition {
-    k_hatchRocketLow("Hatch Rocket Low", 0), k_hatchRocketMid("Hatch Rocket Mid", 2), k_hatchRocketHigh("Hatch Rocket High", 4), k_ballRocketLow("Ball Rocket Low", 6), k_ballRocketMid("Ball Rocket Mid", 8),
-    k_ballRocketHigh("Ball Rocket High", 10), k_hatchCargo("Hatch Cargo", 12), k_ballCargo("Ball Cargo", 14);
+    k_bottom("Bottom", 0, 0), k_hatchRocketLow("Hatch Rocket Low", 0, 1), k_hatchRocketMid("Hatch Rocket Mid", 2, 2), k_hatchRocketHigh("Hatch Rocket High", 4, 3), k_ballRocketLow("Ball Rocket Low", 6, 4), k_ballRocketMid("Ball Rocket Mid", 8, 5),
+    k_ballRocketHigh("Ball Rocket High", 10, 6), k_hatchCargo("Hatch Cargo", 12, 7), k_ballCargo("Ball Cargo", 14, 8);
     public final double heightInEncoderTicks;
     public final String title;
+    private int index;
+    private static ElevatorPosition[] orderedValues = new ElevatorPosition[ElevatorPosition.values().length];
     final NetworkTableHandle handle;
 
-    ElevatorPosition(String title, double heightInEncoderTicks) {
+    ElevatorPosition(String title, double heightInEncoderTicks, int index) {
       this.heightInEncoderTicks = heightInEncoderTicks;
       this.title = title;
+      this.index = index;
       this.handle = new NetworkTableHandle();
+      initialize();
     }
 
-  }
+    private void initialize() {
+      orderedValues[index] = this;
+    }
 
-  /* public static enum ElevatorState {
-    k_autonomous, k_movingUp, k_movingDown, k_holding, k_protectiveHold;
-  }
-  */
+    public ElevatorPosition next() {
+      if (orderedValues.length > index) {
+        return orderedValues[index+1];
+      } else {
+        return this;
+      }
+    }
 
+    public ElevatorPosition previous() {
+      if (index > 0) {
+        return orderedValues[index-1];
+      } else {
+        return this;
+      }
+    }
+  }
 }

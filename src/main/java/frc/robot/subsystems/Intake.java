@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
 import edu.wpi.first.networktables.EntryNotification;
@@ -23,15 +24,9 @@ public class Intake extends Subsystem {
 
     private static Intake m_instance;
     private final double kP = 0, kI = 0, kD = 0, kF = 0;
-    private double P, I, D, F;
     private boolean m_manualControl;
     private boolean m_isCalibrated = false;
-
-    private final NetworkTableHandle ntOutput = new NetworkTableHandle();
-    private final NetworkTableHandle ntCounter = new NetworkTableHandle();
-    private final NetworkTableHandle ntSetpoint = new NetworkTableHandle();
-    private final NetworkTableHandle ntError = new NetworkTableHandle();
-    private final NetworkTableHandle ntIsCalibrated = new NetworkTableHandle();
+    private IntakePosition m_position = IntakePosition.k_touchingGround;
 
     private Spark intakeMotor = new Spark(OI.k_pwmIntakeMotor);
     private int k_encoderPort = 0;
@@ -42,24 +37,34 @@ public class Intake extends Subsystem {
 
     private final double multiplier = 1;
 
+    // SHUFFLEBOARD
+    private final NetworkTableHandle ntOutput = new NetworkTableHandle();
+    private final NetworkTableHandle ntCounter = new NetworkTableHandle();
+    private final NetworkTableHandle ntSetpoint = new NetworkTableHandle();
+    private final NetworkTableHandle ntError = new NetworkTableHandle();
+    private final NetworkTableHandle ntIsCalibrated = new NetworkTableHandle();
+    // END SHUFFLEBOARD
+
     private Intake() {
+        //SHUFFLEBOARD
         new PIDWidget("Intake PID", Shuffleboard.getTab(Keys.Tabs.tab_Calibrate), kP, kI, kD, kF).addListener(new PIDUpdateListener());
         cont.setPercentTolerance(5);
         WidgetProperties output = new WidgetProperties(ntOutput, "Output", BuiltInWidgets.kNumberBar, null, 0);
         WidgetProperties counter = new WidgetProperties(ntCounter, "Counter", BuiltInWidgets.kTextView, null, 0);
-        WidgetProperties fullyUp = new WidgetProperties(null, "Fully Up", BuiltInWidgets.kToggleButton, new SetpointListener(IntakePosition.k_fullyUp), false);
-        WidgetProperties levelGround = new WidgetProperties(null, "Level Ground", BuiltInWidgets.kToggleButton, new SetpointListener(IntakePosition.k_levelGround), false);
-        WidgetProperties touchingGround = new WidgetProperties(null, "Touching Ground", BuiltInWidgets.kToggleButton, new SetpointListener(IntakePosition.k_touchingGround), false);
-        WidgetProperties ballHold = new WidgetProperties(null, "Ball Hold", BuiltInWidgets.kToggleButton, new SetpointListener(IntakePosition.k_ballHold), false);
         WidgetProperties error = new WidgetProperties(ntError, "Error", null, 0);
         WidgetProperties setpoint = new WidgetProperties(ntSetpoint, "Setpoint", null, 0);
         WidgetProperties isCalibrated = new WidgetProperties(ntIsCalibrated, "Calibrated", null, m_isCalibrated);
         WidgetProperties calibrate = new WidgetProperties(null, "Calibrate", notification -> {m_isCalibrated = (boolean) notification.value.getValue();}, false);
+
+        ArrayList<WidgetProperties> positions = new ArrayList<WidgetProperties>();
+        for (IntakePosition p : IntakePosition.values()) {
+            positions.add(new WidgetProperties(p.handle, p.title, BuiltInWidgets.kToggleButton, new PositionListener(p), false));
+        }
         
-        
-        LayoutBuilder.buildLayout("Intake Positions", BuiltInLayouts.kList, Shuffleboard.getTab(Keys.Tabs.tab_Control), 1, 1, new WidgetProperties[]{fullyUp, levelGround, touchingGround, ballHold});
+        LayoutBuilder.buildLayout("Intake Positions", BuiltInLayouts.kList, Shuffleboard.getTab(Keys.Tabs.tab_Control), 1, 1, positions.toArray(new WidgetProperties[positions.size()]));
         LayoutBuilder.buildLayout("Intake Debug", BuiltInLayouts.kList, Shuffleboard.getTab(Keys.Tabs.tab_Debug), 5, 5, new WidgetProperties[]{output, counter, setpoint, error});
         LayoutBuilder.buildLayout("Intake Calibration", BuiltInLayouts.kList, Shuffleboard.getTab(Keys.Tabs.tab_Calibrate), 1, 1, new WidgetProperties[]{isCalibrated, calibrate});
+        // END SHUFFLEBOARD
     }
 
     public static Intake getInstance() {
@@ -70,10 +75,6 @@ public class Intake extends Subsystem {
     }
 
     public void updatePID(double P, double I, double D, double F) {
-        this.P = P;
-        this.I = I;
-        this.D = D;
-        this.F = F;
         cont.reset();
         cont.setPID(P, I, D, F);
     }
@@ -92,15 +93,23 @@ public class Intake extends Subsystem {
     @Override
     public void doRun() {
 
-        if (OI.getInstance().getIntake() != 0) {
+        // update state based on operator interface
+        if (OI.getInstance().getIntakeManualSpeed() != 0) { // if we are manually controlling
             m_manualControl = true;
+        } else if (OI.getInstance().getIntakeUpButton()) {
+            m_manualControl = false;
+            requestPosition(m_position.next());
+        } else if (OI.getInstance().getIntakeDownButton()) {
+            m_manualControl = false;
+            requestPosition(m_position.previous());
         }
 
+        // update motors based on state
         if (m_manualControl) {
             if (cont.isEnabled()) {
                 cont.reset();
             }
-            intakeMotor.set(OI.getInstance().getIntake() * multiplier);
+            intakeMotor.set(OI.getInstance().getIntakeManualSpeed() * multiplier);
         } else {
             if (!cont.isEnabled()) {
                 cont.enable();
@@ -110,12 +119,45 @@ public class Intake extends Subsystem {
         }
     }
 
+    private void requestPosition(IntakePosition position) {
+        cont.setSetpoint(position.setpoint);
+        m_position = position;
+    }
+
     public enum IntakePosition {
-        k_fullyUp(0.4), k_levelGround(0.6), k_touchingGround(0.63), k_ballHold(0.44);
+        k_touchingGround("Touch Ground", 0, 0), k_levelGround("Level", 0, 1), k_ballHold("Hold Ball", 0, 2), k_fullyUp("Fully Up", 0, 3);
+        public String title;
         public double setpoint;
-        private IntakePosition(double setpoint) {
+        public NetworkTableHandle handle;
+        private int index;
+        private static IntakePosition[] orderedValues = new IntakePosition[IntakePosition.values().length];
+        private IntakePosition(String title, double setpoint, int index) {
+            this.title = title;
             this.setpoint = setpoint;
+            this.index = index;
+            handle = new NetworkTableHandle();
+            initialize();
         }
+
+        private void initialize() {
+            orderedValues[index] = this;
+        }
+
+        public IntakePosition next() {
+            if (orderedValues.length > index) {
+                return orderedValues[index+1];
+            } else {
+                return this;
+            }
+        }
+        public IntakePosition previous() {
+            if (index > 0) {
+                return orderedValues[index-1];
+            } else {
+                return this;
+            }
+        }
+
     }
     private class PIDUpdateListener implements Consumer<PIDList>{
         public void accept(PIDList list) {
@@ -123,17 +165,18 @@ public class Intake extends Subsystem {
         }
     }
 
-    private class SetpointListener implements Consumer<EntryNotification> {
+    private class PositionListener implements Consumer<EntryNotification> {
         private IntakePosition requestedPosition;
-        private SetpointListener(IntakePosition requestedPosition) {
+        private PositionListener(IntakePosition requestedPosition) {
             this.requestedPosition = requestedPosition;
         }
         @Override
         public void accept(EntryNotification notification) {
-            cont.setSetpoint(requestedPosition.setpoint);
             m_manualControl = false;
+            requestPosition(requestedPosition);
         }
         
     }
+
 
 }
