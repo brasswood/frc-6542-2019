@@ -92,7 +92,7 @@ public class Intake extends Subsystem {
     @Override
     public void doRun() {
 
-        if (OI.getInstance().getIntakeButton() != 0) {
+        if (OI.getInstance().getIntake() != 0) {
             m_manualControl = true;
         }
 
@@ -100,7 +100,7 @@ public class Intake extends Subsystem {
             if (cont.isEnabled()) {
                 cont.reset();
             }
-            intakeMotor.set(OI.getInstance().getIntakeButton() * multiplier);
+            intakeMotor.set(OI.getInstance().getIntake() * multiplier);
         } else {
             if (!cont.isEnabled()) {
                 cont.enable();
