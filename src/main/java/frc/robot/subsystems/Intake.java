@@ -30,9 +30,10 @@ public class Intake extends Subsystem {
 
     private Spark intakeMotor = new Spark(OI.k_pwmIntakeMotor);
     private int k_encoderPort = 0;
+    private int m_prevDirection = 0;
 
-    // private final SeatMotorCounter counter = new SeatMotorCounter(k_encoderPort, () -> {return (int) Math.signum(intakeMotor.get());});
-    private final Counter counter = new Counter(new DigitalInput(k_encoderPort));
+    private final SeatMotorCounter counter = new SeatMotorCounter(k_encoderPort, () -> {return m_prevDirection;});
+    // private final Counter counter = new Counter(new DigitalInput(k_encoderPort));
     private final PIDController cont = new PIDController(kP, kI, kD, kF, counter, intakeMotor);
 
     private final double multiplier = 1;
@@ -54,7 +55,7 @@ public class Intake extends Subsystem {
         WidgetProperties error = new WidgetProperties(ntError, "Error", null, 0);
         WidgetProperties setpoint = new WidgetProperties(ntSetpoint, "Setpoint", null, 0);
         WidgetProperties isCalibrated = new WidgetProperties(ntIsCalibrated, "Calibrated", null, m_isCalibrated);
-        WidgetProperties calibrate = new WidgetProperties(null, "Calibrate", notification -> {m_isCalibrated = (boolean) notification.value.getValue();}, false);
+        WidgetProperties calibrate = new WidgetProperties(null, "Calibrate", notification -> {calibrate((boolean) notification.value.getValue());}, false);
 
         ArrayList<WidgetProperties> positions = new ArrayList<WidgetProperties>();
         for (IntakePosition p : IntakePosition.values()) {
@@ -78,10 +79,17 @@ public class Intake extends Subsystem {
         cont.reset();
         cont.setPID(P, I, D, F);
     }
+
+    private void calibrate(boolean calibrated) {
+        if (calibrated) {
+            counter.calibrate(0);
+            m_isCalibrated = true;
+        }
+    }
     @Override
     public void outputTelemetry() {
         ntOutput.setDouble(intakeMotor.get());
-        ntCounter.setDouble(counter.get());
+        ntCounter.setDouble(counter.getCounterValue());
         // ntSetpoint.setDouble(cont.getSetpoint());
         // ntError.setDouble(cont.getError());
     }
@@ -93,6 +101,7 @@ public class Intake extends Subsystem {
     @Override
     public void doRun() {
 
+        counter.update();
         // update state based on operator interface
         if (OI.getInstance().getIntakeManualSpeed() != 0) { // if we are manually controlling
             m_manualControl = true;
@@ -117,6 +126,8 @@ public class Intake extends Subsystem {
             System.out.println(cont.get());
             intakeMotor.pidWrite(cont.get());
         }
+
+        m_prevDirection = (int) Math.signum(intakeMotor.get());
     }
 
     private void requestPosition(IntakePosition position) {
@@ -130,21 +141,16 @@ public class Intake extends Subsystem {
         public double setpoint;
         public NetworkTableHandle handle;
         private int index;
-        private static IntakePosition[] orderedValues = new IntakePosition[IntakePosition.values().length];
+        private static IntakePosition[] orderedValues = {k_touchingGround, k_levelGround, k_ballHold, k_fullyUp};
         private IntakePosition(String title, double setpoint, int index) {
             this.title = title;
             this.setpoint = setpoint;
             this.index = index;
             handle = new NetworkTableHandle();
-            initialize();
-        }
-
-        private void initialize() {
-            orderedValues[index] = this;
         }
 
         public IntakePosition next() {
-            if (orderedValues.length > index) {
+            if (orderedValues.length - 1 > index) {
                 return orderedValues[index+1];
             } else {
                 return this;

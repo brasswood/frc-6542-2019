@@ -10,26 +10,24 @@ import edu.wpi.first.wpilibj.PIDSourceType;
 public class SeatMotorCounter implements PIDSource{
     private int m_position;
     private Counter m_counter;
+    private Supplier<Integer> directionSupplier;
     public SeatMotorCounter(int port, Supplier<Integer> directionSupplier) {
         m_counter = new Counter(new DigitalInput(port));
-        /*
-        new Thread() {
-            public void run() {
-                while(!Thread.interrupted()) {
-                    if (directionSupplier.get() ==  -1) {
-                        m_position -= m_counter.get();
-                    } else if (directionSupplier.get() == 1) {
-                        m_position += m_counter.get();
-                    }
-                    m_counter.reset();
-                }
-            }
-        }.start();
-        */
+        this.directionSupplier = directionSupplier;
+    
     }
 
     public void calibrate(int calibrateTo) {
         m_position = calibrateTo;
+    }
+
+    public void update() {
+        if (directionSupplier.get() ==  -1) {
+            m_position -= m_counter.get();
+        } else if (directionSupplier.get() == 1) {
+            m_position += m_counter.get();
+        }
+        m_counter.reset();
     }
     
     public double getPosition() {

@@ -196,7 +196,7 @@ public class Elevator extends Subsystem {
     public final double heightInEncoderTicks;
     public final String title;
     private int index;
-    private static ElevatorPosition[] orderedValues = new ElevatorPosition[ElevatorPosition.values().length];
+    private static ElevatorPosition[] orderedValues = {k_bottom, k_hatchRocketLow, k_hatchRocketMid, k_hatchRocketHigh, k_ballRocketLow, k_ballRocketMid, k_ballRocketHigh, k_hatchCargo, k_ballCargo};
     final NetworkTableHandle handle;
 
     ElevatorPosition(String title, double heightInEncoderTicks, int index) {
@@ -204,15 +204,11 @@ public class Elevator extends Subsystem {
       this.title = title;
       this.index = index;
       this.handle = new NetworkTableHandle();
-      initialize();
-    }
-
-    private void initialize() {
-      orderedValues[index] = this;
+      
     }
 
     public ElevatorPosition next() {
-      if (orderedValues.length > index) {
+      if (orderedValues.length - 1 > index) {
         return orderedValues[index+1];
       } else {
         return this;

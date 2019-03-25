@@ -9,6 +9,7 @@ package frc.robot;
 
 import java.util.Arrays;
 import edu.wpi.cscore.UsbCamera;
+import edu.wpi.cscore.VideoMode.PixelFormat;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -37,7 +38,8 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     UsbCamera cam = CameraServer.getInstance().startAutomaticCapture();
-    cam.setVideoMode(RedCamera.kFormat, RedCamera.kWidth, RedCamera.kHeight, RedCamera.kFps);
+    // cam.setVideoMode(RedCamera.kFormat, RedCamera.kWidth, RedCamera.kHeight, RedCamera.kFps);
+    cam.setVideoMode(PixelFormat.kMJPEG, 160, 120, 15);
     Shuffleboard.getTab(Keys.Tabs.tab_Control).add(cam).withSize(2, 2).withPosition(0, 0);
     m_subsystemManager.initialize();
   }
@@ -54,6 +56,7 @@ public class Robot extends TimedRobot {
     m_subsystemManager.run();
     m_subsystemManager.outputToSmartDashboard();
     Drive.getInstance().autonPeriodic();
+    OI.getInstance().update();
   }
 
   @Override
@@ -66,6 +69,7 @@ public class Robot extends TimedRobot {
     m_subsystemManager.run();
     m_subsystemManager.outputToSmartDashboard();
     Drive.getInstance().teleopPeriodic();
+    OI.getInstance().update();
   }
 
   @Override

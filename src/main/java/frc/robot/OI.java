@@ -38,11 +38,16 @@ public class OI {
     private static final int k_povDown = 180;
     private static final int k_povLeft = 270;
 
+    public int m_pov = 0;
+    public int m_povPrev;
+
 
     public void init() {
     }
 
     public void update() {
+        m_povPrev = m_pov;
+        m_pov = m_controlStick.getPOV();
     }
 
     public static double deadband(double input, double deadband) {
@@ -66,23 +71,23 @@ public class OI {
     }
 
     public boolean getElevatorUpButton() {
-        return (m_controlStick.getPOV() == k_povRight);
+        return ((m_pov == k_povRight) && (m_povPrev != k_povRight));
     }
 
     public boolean getElevatorDownButton(){
-        return (m_controlStick.getPOV() == k_povLeft);
+        return ((m_pov == k_povLeft) && (m_povPrev != k_povLeft));
     }
 
     public double getIntakeManualSpeed() {
-        return deadband(-m_controlStick.getY(), 0.1);
+        return deadband(m_controlStick.getY(), 0.1);
     }
 
     public boolean getIntakeUpButton() {
-        return (m_controlStick.getPOV() == k_povDown);
+        return ((m_pov == k_povDown) && (m_povPrev != k_povDown));
     }
 
     public boolean getIntakeDownButton() {
-        return (m_controlStick.getPOV() == k_povUp);
+        return ((m_pov == k_povUp) && (m_povPrev != k_povUp));
     }
 
     public static OI getInstance() {
