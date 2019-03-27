@@ -43,13 +43,15 @@ public class Elevator extends Subsystem {
   private final double k_maxCurrent = 70;
   private final double k_maxStallTime = 2.5;
 
-  private final boolean k_sensorPhase = true;
+  private final boolean k_sensorPhase = false;
 
   private final NetworkTableHandle ntOutput = new NetworkTableHandle();
   private final NetworkTableHandle ntPosition = new NetworkTableHandle();
   private final NetworkTableHandle ntSetpoint = new NetworkTableHandle();
   private final NetworkTableHandle ntError = new NetworkTableHandle();
   private final NetworkTableHandle ntCalibrated = new NetworkTableHandle();
+  private final NetworkTableHandle ntManual = new NetworkTableHandle();
+  private final NetworkTableHandle ntHolding = new NetworkTableHandle();
 
   private final double kP = 0, kI = 0, kD = 0, kF = 0;
   private final int k_error = 200;
@@ -60,7 +62,9 @@ public class Elevator extends Subsystem {
     WidgetProperties output = new WidgetProperties(ntOutput, "Output", BuiltInWidgets.kNumberBar, null, 0);
     WidgetProperties position = new WidgetProperties(ntPosition, "Position", BuiltInWidgets.kTextView, null, 0);
     WidgetProperties setpoint = new WidgetProperties(ntSetpoint, "Setpoint", BuiltInWidgets.kTextView, null, 0);
+    WidgetProperties manual = new WidgetProperties(ntManual, "Manual", BuiltInWidgets.kBooleanBox, null, false);
     WidgetProperties error = new WidgetProperties(ntError, "Error", BuiltInWidgets.kTextView, null, 0);
+    WidgetProperties holding = new WidgetProperties(ntHolding, "Holding", BuiltInWidgets.kBooleanBox, null, false);
     WidgetProperties calibrated = new WidgetProperties(ntCalibrated, "CALIBRATED", BuiltInWidgets.kBooleanBox, null, false);
     WidgetProperties calibrateButton = new WidgetProperties(null, "CALIBRATE", BuiltInWidgets.kToggleButton, new CalibrationListener(), false);
     
@@ -70,7 +74,7 @@ public class Elevator extends Subsystem {
     }
     LayoutBuilder.buildLayout("Elevator Positions", BuiltInLayouts.kList, Shuffleboard.getTab(Keys.Tabs.tab_Control), 2, 5, positionsArray.toArray(new WidgetProperties[positionsArray.size()]));
     
-    WidgetProperties[] elevatorWidgetArray = {output, position, setpoint, error};
+    WidgetProperties[] elevatorWidgetArray = {manual, holding, output, position, setpoint, error};
     LayoutBuilder.buildLayout("Elevator", BuiltInLayouts.kList, Shuffleboard.getTab(Keys.Tabs.tab_Debug), 5, 5, elevatorWidgetArray);
     LayoutBuilder.buildLayout("Elevator", BuiltInLayouts.kList, Shuffleboard.getTab(Keys.Tabs.tab_Calibrate), 1, 1, new WidgetProperties[]{calibrated, calibrateButton});
 
@@ -87,6 +91,8 @@ public class Elevator extends Subsystem {
   public void outputTelemetry() {
     ntOutput.setDouble(m_elevatorMotor.getMotorOutputPercent());
     ntPosition.setDouble(m_elevatorMotor.getSelectedSensorPosition());
+    ntManual.setBoolean(m_manualControl);
+    ntHolding.setBoolean(m_holding);
     if (!m_manualControl) {
       ntSetpoint.setDouble(m_elevatorMotor.getClosedLoopTarget());
       ntError.setDouble(m_elevatorMotor.getClosedLoopError());
@@ -102,31 +108,15 @@ public class Elevator extends Subsystem {
   public void doRun() {
     // Poll controls to set manual mode
     if (OI.getInstance().getElevatorManualSpeed() != 0) {
+      m_elevatorMotor.set(ControlMode.PercentOutput, OI.getInstance().getElevatorManualSpeed());
       m_manualControl = true;
     } else if (OI.getInstance().getElevatorDownButton()) {
-      m_manualControl = false;
       requestPosition(m_elevatorPosition.previous());
+      m_manualControl = false;
     } else if (OI.getInstance().getElevatorUpButton()) {
       m_manualControl = false;
       requestPosition(m_elevatorPosition.next());
-    }
-
-    if (m_manualControl) {
-      if (OI.getInstance().getElevatorManualSpeed() != 0) {
-        m_holding = false;
-        m_elevatorMotor.set(ControlMode.PercentOutput, OI.getInstance().getElevatorManualSpeed());
-      } else {
-        m_holding = true;
-      }
-    } else {
-      if (m_elevatorMotor.getClosedLoopError() <= k_error) {
-        m_holding = true;
-      } else {
-        m_holding = false;
-      }
-    }
-
-    if (m_holding) {
+    } else if (m_manualControl) {
       m_elevatorMotor.set(ControlMode.PercentOutput, k_holdSpeed);
     }
   }
@@ -191,7 +181,7 @@ public class Elevator extends Subsystem {
   }
 
   public enum ElevatorPosition {
-    k_bottom("Bottom", 0, 0), k_hatchRocketLow("Hatch Rocket Low", 0, 1), k_hatchRocketMid("Hatch Rocket Mid", 2, 2), k_hatchRocketHigh("Hatch Rocket High", 4, 3), k_ballRocketLow("Ball Rocket Low", 6, 4), k_ballRocketMid("Ball Rocket Mid", 8, 5),
+    k_bottom("Bottom", 0, 0), k_hatchRocketLow("Hatch Rocket Low", 20480, 1), k_hatchRocketMid("Hatch Rocket Mid", 2, 2), k_hatchRocketHigh("Hatch Rocket High", 4, 3), k_ballRocketLow("Ball Rocket Low", 6, 4), k_ballRocketMid("Ball Rocket Mid", 8, 5),
     k_ballRocketHigh("Ball Rocket High", 10, 6), k_hatchCargo("Hatch Cargo", 12, 7), k_ballCargo("Ball Cargo", 14, 8);
     public final double heightInEncoderTicks;
     public final String title;
